@@ -1,0 +1,19 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    DATABASE_URL: str | None = None
+    ADMIN_API_KEY: str = ""
+    SERVICE_KEY: str = ""
+    MASCOTAS_API_URL: str = ""
+    CORS_ORIGINS: str = "*"
+    DEBUG_ENABLED: bool = False
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+
+settings = Settings()
