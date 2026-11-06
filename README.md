@@ -82,3 +82,21 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8002
 Swagger: <http://127.0.0.1:8002/docs>
 
 Para configurar una conexión a PostgreSQL u otras variables, copia el `.env.example` del servicio correspondiente a `.env` y completa los valores localmente. No subas el archivo `.env`.
+
+### Frontend
+
+En otra terminal:
+
+```powershell
+cd frontend
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
+
+La aplicación estará disponible en <http://127.0.0.1:5173>. El archivo `.env` usa por defecto:
+
+```text
+VITE_API_MASCOTAS_URL=http://127.0.0.1:8001
+VITE_API_ADOPCIONES_URL=http://127.0.0.1:8002
+```
