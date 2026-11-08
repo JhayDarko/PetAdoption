@@ -21,7 +21,6 @@ export default function Admin() {
   const [claveIngresada, setClaveIngresada] = useState('')
   const [mensaje, setMensaje] = useState(null)
   const [pestana, setPestana] = useState('mascotas')
-
   function iniciarSesion(evento) {
     evento.preventDefault()
     if (!claveIngresada.trim()) {
@@ -48,9 +47,11 @@ export default function Admin() {
 
   if (!clave) {
     return (
-      <section className="mx-auto max-w-md rounded-3xl bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-bold text-bosque">Panel administrativo</h1>
-        <p className="mt-2 text-slate-600">Ingresa la clave de administrador para continuar.</p>
+      <section className="admin-login mx-auto max-w-md rounded-[2rem] bg-white p-8 shadow-xl shadow-emerald-950/5 sm:p-10">
+        <div className="mb-8 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-2xl">🔐</div>
+        <p className="eyebrow">Área privada</p>
+        <h1 className="mt-2 text-3xl font-bold text-bosque">Panel administrativo</h1>
+        <p className="mt-3 text-slate-600">Gestiona mascotas y solicitudes desde un solo lugar.</p>
         {mensaje && <Aviso tipo={mensaje.tipo}>{mensaje.texto}</Aviso>}
         <form onSubmit={iniciarSesion} className="mt-6">
           <label className="text-sm font-semibold text-slate-700">
@@ -63,7 +64,7 @@ export default function Admin() {
               autoComplete="current-password"
             />
           </label>
-          <button className="mt-5 w-full rounded-xl bg-bosque px-5 py-3 font-semibold text-white hover:bg-hoja">
+          <button className="primary-button mt-5 w-full">
             Ingresar
           </button>
         </form>
@@ -72,29 +73,140 @@ export default function Admin() {
   }
 
   return (
-    <section>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section className="admin-shell">
+      <div className="admin-heading flex flex-wrap items-end justify-between gap-5">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-widest text-hoja">Administración</p>
-          <h1 className="mt-1 text-3xl font-bold text-bosque">Panel administrativo</h1>
+          <p className="eyebrow">Área privada</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-bosque sm:text-4xl">Panel administrativo</h1>
+          <p className="mt-2 text-slate-500">Una vista clara para cuidar cada paso del proceso de adopción.</p>
         </div>
-        <button onClick={cerrarSesion} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-terracota hover:text-terracota">
-          Cerrar sesión
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={cerrarSesion} className="secondary-button">Cerrar sesión</button>
+        </div>
       </div>
       {mensaje && <Aviso tipo={mensaje.tipo}>{mensaje.texto}</Aviso>}
-      <div className="mt-8 flex gap-2 border-b border-slate-200">
-        <button onClick={() => setPestana('mascotas')} className={`border-b-2 px-4 py-3 text-sm font-semibold ${pestana === 'mascotas' ? 'border-terracota text-terracota' : 'border-transparent text-slate-500'}`}>
+      <div className="admin-tabs mt-8 flex gap-1 rounded-2xl bg-white p-1 shadow-sm">
+        <button onClick={() => setPestana('mascotas')} className={`admin-tab ${pestana === 'mascotas' ? 'admin-tab-active' : ''}`}>
           Mascotas
         </button>
-        <button onClick={() => setPestana('solicitudes')} className={`border-b-2 px-4 py-3 text-sm font-semibold ${pestana === 'solicitudes' ? 'border-terracota text-terracota' : 'border-transparent text-slate-500'}`}>
+        <button onClick={() => setPestana('solicitudes')} className={`admin-tab ${pestana === 'solicitudes' ? 'admin-tab-active' : ''}`}>
           Solicitudes
         </button>
       </div>
       {pestana === 'mascotas'
         ? <MascotasAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />
         : <SolicitudesAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />}
+      <DocumentacionAdmin />
     </section>
+  )
+}
+
+function DocumentacionAdmin() {
+  return (
+    <section className="admin-documentation mt-12 border-t border-emerald-950/10 pt-10">
+      <div className="max-w-3xl">
+        <p className="eyebrow">Sustentación del proyecto</p>
+        <h2 className="mt-2 text-2xl font-bold text-bosque sm:text-3xl">Arquitectura y flujo de adopción</h2>
+        <p className="mt-3 text-slate-600">
+          Plataforma SOA para la Fundación Huellas de Esperanza, compuesta por
+          dos servicios autónomos, un frontend web y PostgreSQL en Supabase.
+        </p>
+      </div>
+
+      <div className="admin-architecture mt-8 rounded-3xl bg-slate-950 p-5 text-white shadow-xl shadow-emerald-950/10 sm:p-8">
+        <div className="architecture-node architecture-user">
+          <span className="text-2xl">👤</span>
+          <strong>Usuario / Administrador</strong>
+          <small>Consulta y gestiona el proceso</small>
+        </div>
+        <div className="architecture-arrow">↓</div>
+        <div className="architecture-node architecture-frontend">
+          <span className="text-2xl">🖥️</span>
+          <strong>Frontend React + Vite</strong>
+          <small>Catálogo, solicitudes, seguimiento y panel admin</small>
+        </div>
+        <div className="architecture-arrow">↓ HTTP/JSON</div>
+        <div className="architecture-services">
+          <div className="architecture-node architecture-service">
+            <span className="text-2xl">🐾</span>
+            <strong>API Mascotas</strong>
+            <small>Puerto 8001 · esquema svc_mascotas</small>
+          </div>
+          <div className="architecture-node architecture-service">
+            <span className="text-2xl">🏠</span>
+            <strong>API Adopciones</strong>
+            <small>Puerto 8002 · esquema svc_adopciones</small>
+          </div>
+        </div>
+        <div className="architecture-arrow">API Adopciones → API Mascotas: disponibilidad y estado</div>
+        <div className="architecture-node architecture-database">
+          <span className="text-2xl">🗄️</span>
+          <strong>PostgreSQL / Supabase</strong>
+          <small>Persistencia independiente por servicio · sin FK entre APIs</small>
+        </div>
+      </div>
+
+      <div className="mt-8 grid gap-5 lg:grid-cols-3">
+        <InfoDocumentacion
+          titulo="Responsabilidades"
+          items={[
+            'Mascotas administra el catálogo, disponibilidad y estado de cada animal.',
+            'Adopciones registra solicitudes y controla aprobar o rechazar.',
+            'El frontend consume ambas APIs únicamente mediante HTTP/JSON.',
+          ]}
+        />
+        <InfoDocumentacion
+          titulo="Flujo principal"
+          items={[
+            'Consultar una mascota disponible.',
+            'Crear solicitud y verificar disponibilidad.',
+            'Aprobar: adopción, rechazos automáticos y estado adoptada.',
+            'Rechazar: la mascota permanece disponible.',
+          ]}
+        />
+        <InfoDocumentacion
+          titulo="Garantías"
+          items={[
+            'Índice único: una adopción aprobada por mascota.',
+            'Bloqueo de fila para aprobar solicitudes concurrentes.',
+            'Claves X-API-Key y X-Service-Key.',
+            'Errores HTTP 401, 404, 409 y 503.',
+          ]}
+        />
+      </div>
+
+      <div className="mt-5 rounded-3xl bg-white p-6 shadow-sm">
+        <div>
+          <p className="eyebrow">Modelo de datos</p>
+          <h3 className="mt-2 text-xl font-bold text-bosque">Dos esquemas autónomos</h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <ModeloServicio nombre="svc_mascotas" tabla="mascotas" campos="id, nombre, especie, estado, foto_url" />
+            <ModeloServicio nombre="svc_adopciones" tabla="solicitudes" campos="id, mascota_id, solicitante, estado, decisión" />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function InfoDocumentacion({ titulo, items }) {
+  return (
+    <article className="rounded-2xl bg-white p-5 shadow-sm">
+      <h3 className="text-lg font-bold text-bosque">{titulo}</h3>
+      <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
+        {items.map((item) => <li key={item} className="flex gap-2"><span className="text-terracota">•</span><span>{item}</span></li>)}
+      </ul>
+    </article>
+  )
+}
+
+function ModeloServicio({ nombre, tabla, campos }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 p-4">
+      <p className="text-xs font-bold uppercase tracking-wider text-hoja">{nombre}</p>
+      <p className="mt-1 font-semibold text-slate-800">tabla {tabla}</p>
+      <p className="mt-2 text-xs leading-5 text-slate-500">{campos}</p>
+    </div>
   )
 }
 

@@ -6,7 +6,6 @@ class Settings(BaseSettings):
     ADMIN_API_KEY: str = ""
     SERVICE_KEY: str = ""
     CORS_ORIGINS: str = "*"
-    DEBUG_ENABLED: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -12,18 +12,21 @@ export default function Catalogo() {
 
   return (
     <section>
-      <div className="mb-8 rounded-3xl bg-bosque px-6 py-10 text-white sm:px-10">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-200">Adopta con amor</p>
-        <h1 className="max-w-2xl text-3xl font-bold sm:text-5xl">Encuentra un nuevo amigo para toda la vida.</h1>
-        <p className="mt-4 max-w-xl text-emerald-50">Conoce a los animales que esperan un hogar responsable y lleno de cariño.</p>
+      <div className="hero-panel mb-8 overflow-hidden rounded-[2rem] bg-bosque px-6 py-10 text-white sm:px-10 sm:py-14">
+        <div className="relative z-10 max-w-2xl">
+          <p className="eyebrow text-emerald-200">Adopta con amor</p>
+          <h1 className="mt-3 max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-6xl">Un hogar cambia dos vidas.</h1>
+          <p className="mt-5 max-w-xl text-base leading-7 text-emerald-50 sm:text-lg">Conoce a los animales que esperan una familia responsable, paciente y llena de cariño.</p>
+          <div className="mt-8 flex flex-wrap gap-3 text-sm"><span className="rounded-full bg-white/10 px-4 py-2 text-emerald-50">🐾 Adopción responsable</span><span className="rounded-full bg-white/10 px-4 py-2 text-emerald-50">🤍 Compañía para siempre</span></div>
+        </div>
       </div>
-      <div className="mb-8 grid gap-4 rounded-2xl bg-white p-4 shadow-sm sm:grid-cols-[12rem_1fr]">
-        <label className="text-sm font-semibold text-slate-600">Especie
+      <div className="filter-card mb-8 grid gap-4 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-[12rem_1fr]">
+        <label className="field-label">Especie
           <select value={especie} onChange={(e) => setEspecie(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-hoja">
             <option value="">Todas</option><option value="perro">Perros</option><option value="gato">Gatos</option><option value="otro">Otros</option>
           </select>
         </label>
-        <label className="text-sm font-semibold text-slate-600">Buscar por nombre
+        <label className="field-label">Buscar por nombre
           <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Ej. Luna" className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal outline-none focus:border-hoja" />
         </label>
       </div>

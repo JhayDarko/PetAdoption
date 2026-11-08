@@ -3,8 +3,8 @@ const adopcionesUrl = import.meta.env.VITE_API_ADOPCIONES_URL || 'http://127.0.0
 
 async function solicitar(url, opciones = {}) {
   const respuesta = await fetch(url, {
-    headers: { Accept: 'application/json', ...opciones.headers },
     ...opciones,
+    headers: { Accept: 'application/json', ...opciones.headers },
   })
 
   if (!respuesta.ok) {
