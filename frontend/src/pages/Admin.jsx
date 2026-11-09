@@ -267,6 +267,8 @@ function MascotasAdmin({ onUnauthorized, onMensaje }) {
   const [error, setError] = useState(null)
   const [lenta, setLenta] = useState(false)
   const [formulario, setFormulario] = useState(null)
+  const [mascotaEliminar, setMascotaEliminar] = useState(null)
+  const [eliminando, setEliminando] = useState(false)
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -286,15 +288,19 @@ function MascotasAdmin({ onUnauthorized, onMensaje }) {
 
   useEffect(() => { cargar() }, [cargar])
 
-  async function eliminar(mascota) {
-    if (!window.confirm(`¿Eliminar a ${mascota.nombre}? Esta acción no se puede deshacer.`)) return
+  async function eliminar() {
+    if (!mascotaEliminar) return
+    setEliminando(true)
     try {
-      await eliminarMascota(mascota.id)
+      await eliminarMascota(mascotaEliminar.id)
       onMensaje({ tipo: 'exito', texto: 'Mascota eliminada correctamente.' })
-      cargar()
+      setMascotaEliminar(null)
+      await cargar()
     } catch (fallo) {
       if (fallo.status === 401) onUnauthorized()
       else onMensaje({ tipo: 'error', texto: mensajeAccion(fallo) })
+    } finally {
+      setEliminando(false)
     }
   }
 
@@ -325,18 +331,30 @@ function MascotasAdmin({ onUnauthorized, onMensaje }) {
       <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Especie</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Acciones</th></tr></thead>
-          <tbody>{mascotas.map((mascota) => <tr key={mascota.id} className="border-t border-slate-100"><td className="px-4 py-4 font-semibold text-bosque">{mascota.nombre}</td><td className="px-4 py-4 capitalize">{mascota.especie}</td><td className="px-4 py-4"><Estado estado={mascota.estado} /></td><td className="px-4 py-4"><div className="flex gap-2"><button onClick={() => setFormulario({ datos: mascota, id: mascota.id })} className="rounded-lg border border-slate-200 px-3 py-2 font-semibold text-slate-700 hover:border-hoja hover:text-hoja">Editar</button><button onClick={() => eliminar(mascota)} className="rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-700 hover:bg-red-50">Eliminar</button></div></td></tr>)}</tbody>
+          <tbody>{mascotas.map((mascota) => <tr key={mascota.id} className="border-t border-slate-100"><td className="px-4 py-4 font-semibold text-bosque">{mascota.nombre}</td><td className="px-4 py-4 capitalize">{mascota.especie}</td><td className="px-4 py-4"><Estado estado={mascota.estado} /></td><td className="px-4 py-4"><div className="flex gap-2"><button onClick={() => setFormulario({ datos: mascota, id: mascota.id })} className="rounded-lg border border-slate-200 px-3 py-2 font-semibold text-slate-700 hover:border-hoja hover:text-hoja">Editar</button><button onClick={() => setMascotaEliminar(mascota)} className="rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-700 hover:bg-red-50">Eliminar</button></div></td></tr>)}</tbody>
         </table>
         {mascotas.length === 0 && <p className="p-8 text-center text-slate-500">No hay mascotas registradas.</p>}
       </div>
+      {mascotaEliminar && <ConfirmacionModal
+        titulo="Eliminar mascota"
+        texto={`¿Quieres eliminar a ${mascotaEliminar.nombre}? Esta acción no se puede deshacer.`}
+        confirmando={eliminando}
+        onConfirmar={eliminar}
+        onCancelar={() => !eliminando && setMascotaEliminar(null)}
+      />}
     </div>
   )
 }
 
 function MascotaFormulario({ inicial, id, onGuardar, onCancelar }) {
   const [datos, setDatos] = useState({ ...mascotaInicial, ...inicial })
+  const [guardando, setGuardando] = useState(false)
   function cambiar(evento) { setDatos({ ...datos, [evento.target.name]: evento.target.value }) }
-  function enviar(evento) { evento.preventDefault(); onGuardar(datos, id) }
+  async function enviar(evento) {
+    evento.preventDefault()
+    setGuardando(true)
+    try { await onGuardar(datos, id) } finally { setGuardando(false) }
+  }
   return (
     <form onSubmit={enviar} className="mb-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2">
       <h2 className="text-xl font-bold text-bosque sm:col-span-2">{id ? 'Editar mascota' : 'Crear mascota'}</h2>
@@ -347,8 +365,9 @@ function MascotaFormulario({ inicial, id, onGuardar, onCancelar }) {
       <CampoAdmin nombre="edad_meses" etiqueta="Edad (meses)" tipo="number" valor={datos.edad_meses ?? ''} cambiar={cambiar} />
       <label className="label-admin">Tamaño<select name="tamano" value={datos.tamano || ''} onChange={cambiar} className="input-admin"><option value="">Sin especificar</option><option value="pequeno">Pequeño</option><option value="mediano">Mediano</option><option value="grande">Grande</option></select></label>
       <CampoAdmin nombre="foto_url" etiqueta="URL de foto" valor={datos.foto_url} cambiar={cambiar} />
+      {datos.foto_url && <div className="rounded-xl bg-slate-50 p-2 sm:col-span-2"><img src={datos.foto_url} alt={`Vista previa de ${datos.nombre || 'la mascota'}`} className="h-40 w-full rounded-lg object-cover" onError={(evento) => { evento.currentTarget.style.display = 'none' }} /></div>}
       <label className="label-admin sm:col-span-2">Descripción<textarea name="descripcion" value={datos.descripcion || ''} onChange={cambiar} rows="3" className="input-admin" /></label>
-      <div className="flex gap-2 sm:col-span-2"><button className="rounded-xl bg-bosque px-4 py-2 font-semibold text-white">Guardar</button><button type="button" onClick={onCancelar} className="rounded-xl border border-slate-200 px-4 py-2 font-semibold text-slate-700">Cancelar</button></div>
+      <div className="flex gap-2 sm:col-span-2"><button disabled={guardando} className="rounded-xl bg-bosque px-4 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">{guardando ? 'Guardando...' : 'Guardar cambios'}</button><button type="button" onClick={onCancelar} disabled={guardando} className="rounded-xl border border-slate-200 px-4 py-2 font-semibold text-slate-700 disabled:opacity-50">Cancelar</button></div>
     </form>
   )
 }
@@ -361,6 +380,8 @@ function SolicitudesAdmin({ onUnauthorized, onMensaje }) {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(null)
   const [lenta, setLenta] = useState(false)
+  const [rechazo, setRechazo] = useState(null)
+  const [procesandoId, setProcesandoId] = useState(null)
 
   const cargar = useCallback(async () => {
     setCargando(true); setError(null)
@@ -384,26 +405,32 @@ function SolicitudesAdmin({ onUnauthorized, onMensaje }) {
   const nombres = useMemo(() => Object.fromEntries(mascotas.map((mascota) => [mascota.id, mascota.nombre])), [mascotas])
 
   async function aprobar(id) {
+    setProcesandoId(id)
     try {
       await aprobarSolicitud(id)
       onMensaje({ tipo: 'exito', texto: 'Solicitud aprobada y mascota marcada como adoptada.' })
-      cargar()
+      await cargar()
     } catch (fallo) {
       if (fallo.status === 401) onUnauthorized()
       else onMensaje({ tipo: 'error', texto: mensajeAccion(fallo) })
+    } finally {
+      setProcesandoId(null)
     }
   }
 
-  async function rechazar(id) {
-    const motivo = window.prompt('Escribe el motivo del rechazo:')
-    if (!motivo?.trim()) return
+  async function rechazar(motivo) {
+    if (!rechazo || !motivo.trim()) return
+    setProcesandoId(rechazo.id)
     try {
-      await rechazarSolicitud(id, motivo.trim())
+      await rechazarSolicitud(rechazo.id, motivo.trim())
       onMensaje({ tipo: 'exito', texto: 'Solicitud rechazada correctamente.' })
-      cargar()
+      setRechazo(null)
+      await cargar()
     } catch (fallo) {
       if (fallo.status === 401) onUnauthorized()
       else onMensaje({ tipo: 'error', texto: mensajeAccion(fallo) })
+    } finally {
+      setProcesandoId(null)
     }
   }
 
@@ -416,7 +443,51 @@ function SolicitudesAdmin({ onUnauthorized, onMensaje }) {
       {lenta && <AvisoServidor />}
       {cargando && <Cargando texto="Cargando solicitudes..." />}
       {!cargando && error && <ErrorPeticion error={error} reintentar={cargar} />}
-      {!cargando && !error && <div className="overflow-x-auto rounded-2xl bg-white shadow-sm"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Mascota</th><th className="px-4 py-3">Solicitante</th><th className="px-4 py-3">Contacto</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Fecha</th><th className="px-4 py-3">Acciones</th></tr></thead><tbody>{solicitudes.map((solicitud) => <tr key={solicitud.id} className="border-t border-slate-100 align-top"><td className="px-4 py-4 font-semibold text-bosque">{nombres[solicitud.mascota_id] || solicitud.mascota_id}</td><td className="px-4 py-4">{solicitud.nombre_solicitante}<br /><span className="text-xs text-slate-500">{solicitud.documento}</span></td><td className="px-4 py-4">{solicitud.email}<br /><span className="text-xs text-slate-500">{solicitud.telefono || 'Sin teléfono'}</span></td><td className="px-4 py-4"><Estado estado={solicitud.estado} /></td><td className="whitespace-nowrap px-4 py-4 text-slate-500">{new Date(solicitud.created_at).toLocaleString('es-CO')}</td><td className="px-4 py-4">{solicitud.estado === 'pendiente' && <div className="flex flex-wrap gap-2"><button onClick={() => aprobar(solicitud.id)} className="rounded-lg bg-hoja px-3 py-2 font-semibold text-white">Aprobar</button><button onClick={() => rechazar(solicitud.id)} className="rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-700">Rechazar</button></div>}</td></tr>)}</tbody></table>{solicitudes.length === 0 && <p className="p-8 text-center text-slate-500">No hay solicitudes para esos filtros.</p>}</div>}
+      {!cargando && !error && <div className="overflow-x-auto rounded-2xl bg-white shadow-sm"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Mascota</th><th className="px-4 py-3">Solicitante</th><th className="px-4 py-3">Contacto</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Fecha</th><th className="px-4 py-3">Acciones</th></tr></thead><tbody>{solicitudes.map((solicitud) => { const ocupado = procesandoId === solicitud.id; return <tr key={solicitud.id} className="border-t border-slate-100 align-top"><td className="px-4 py-4 font-semibold text-bosque">{nombres[solicitud.mascota_id] || solicitud.mascota_id}</td><td className="px-4 py-4">{solicitud.nombre_solicitante}<br /><span className="text-xs text-slate-500">{solicitud.documento}</span></td><td className="px-4 py-4">{solicitud.email}<br /><span className="text-xs text-slate-500">{solicitud.telefono || 'Sin teléfono'}</span></td><td className="px-4 py-4"><Estado estado={solicitud.estado} /></td><td className="whitespace-nowrap px-4 py-4 text-slate-500">{new Date(solicitud.created_at).toLocaleString('es-CO')}</td><td className="px-4 py-4">{solicitud.estado === 'pendiente' && <div className="flex flex-wrap gap-2"><button disabled={ocupado} onClick={() => aprobar(solicitud.id)} className="rounded-lg bg-hoja px-3 py-2 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60">{ocupado ? 'Procesando...' : 'Aprobar'}</button><button disabled={ocupado} onClick={() => setRechazo({ id: solicitud.id, mascota: nombres[solicitud.mascota_id] || 'esta mascota' })} className="rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-700 disabled:opacity-50">Rechazar</button></div>}</td></tr> })}</tbody></table>{solicitudes.length === 0 && <p className="p-8 text-center text-slate-500">No hay solicitudes para esos filtros.</p>}</div>}
+      {rechazo && <RechazoModal mascota={rechazo.mascota} onConfirmar={rechazar} onCancelar={() => setRechazo(null)} />}
+    </div>
+  )
+}
+
+function ConfirmacionModal({ titulo, texto, confirmando, onConfirmar, onCancelar }) {
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmacion-titulo">
+        <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-red-50 text-xl">!</div>
+        <h2 id="confirmacion-titulo" className="text-xl font-bold text-bosque">{titulo}</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">{texto}</p>
+        <div className="mt-6 flex justify-end gap-2">
+          <button type="button" onClick={onCancelar} disabled={confirmando} className="secondary-button disabled:opacity-50">Cancelar</button>
+          <button type="button" onClick={onConfirmar} disabled={confirmando} className="rounded-xl bg-red-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{confirmando ? 'Eliminando...' : 'Sí, eliminar'}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RechazoModal({ mascota, onConfirmar, onCancelar }) {
+  const [motivo, setMotivo] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState('')
+  async function enviar(evento) {
+    evento.preventDefault()
+    if (motivo.trim().length < 3) return setError('Escribe un motivo de al menos 3 caracteres.')
+    setEnviando(true)
+    try { await onConfirmar(motivo) } finally { setEnviando(false) }
+  }
+  return (
+    <div className="modal-backdrop" role="presentation">
+      <form onSubmit={enviar} className="modal-card" role="dialog" aria-modal="true" aria-labelledby="rechazo-titulo">
+        <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-amber-50 text-xl">✎</div>
+        <h2 id="rechazo-titulo" className="text-xl font-bold text-bosque">Rechazar solicitud</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">Indica el motivo para que quede registrado en el seguimiento de {mascota}.</p>
+        <label className="label-admin mt-5 block">Motivo del rechazo<textarea autoFocus value={motivo} onChange={(evento) => { setMotivo(evento.target.value); setError('') }} rows="4" className={`input-admin ${error ? 'border-red-400' : ''}`} placeholder="Escribe una explicación clara y respetuosa..." /></label>
+        {error && <p className="mt-2 text-xs font-semibold text-red-700">{error}</p>}
+        <div className="mt-6 flex justify-end gap-2">
+          <button type="button" onClick={onCancelar} disabled={enviando} className="secondary-button disabled:opacity-50">Cancelar</button>
+          <button disabled={enviando} className="rounded-xl bg-red-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{enviando ? 'Guardando...' : 'Confirmar rechazo'}</button>
+        </div>
+      </form>
     </div>
   )
 }
