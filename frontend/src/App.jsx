@@ -10,7 +10,7 @@ function Layout({ children }) {
     `transition hover:text-terracota ${isActive ? 'font-semibold text-terracota' : 'text-slate-600'}`
 
   return (
-    <div className="min-h-screen bg-crema text-slate-800">
+    <div className="flex min-h-screen flex-col bg-crema text-slate-800">
       <header className="site-header">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-5 px-4 py-4 sm:px-6">
           <Link to="/" className="flex items-center gap-3 text-lg font-bold text-bosque">
@@ -24,7 +24,7 @@ function Layout({ children }) {
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
       <footer className="mt-16 border-t border-emerald-950/10 bg-white/60 py-8 text-center text-sm text-slate-500">
         <span className="font-semibold text-bosque">Huellas de Esperanza</span> · Adopción responsable para una vida llena de compañía.
       </footer>

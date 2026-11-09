@@ -102,6 +102,11 @@ export default function Admin() {
 }
 
 function DocumentacionAdmin() {
+  const servicios = [
+    { nombre: 'API Mascotas', url: 'https://mascotas-jhsx.onrender.com', docs: 'https://mascotas-jhsx.onrender.com/docs', descripcion: 'Catálogo, disponibilidad y estados' },
+    { nombre: 'API Adopciones', url: 'https://adoption-hdh3.onrender.com', docs: 'https://adoption-hdh3.onrender.com/docs', descripcion: 'Solicitudes, seguimiento y decisiones' },
+  ]
+
   return (
     <section className="admin-documentation mt-12 border-t border-emerald-950/10 pt-10">
       <div className="max-w-3xl">
@@ -117,32 +122,49 @@ function DocumentacionAdmin() {
         <div className="architecture-node architecture-user">
           <span className="text-2xl">👤</span>
           <strong>Usuario / Administrador</strong>
-          <small>Consulta y gestiona el proceso</small>
+          <small>Inicia y supervisa la adopción</small>
         </div>
-        <div className="architecture-arrow">↓</div>
+        <div className="architecture-arrow">↓ consulta y administra</div>
         <div className="architecture-node architecture-frontend">
           <span className="text-2xl">🖥️</span>
           <strong>Frontend React + Vite</strong>
-          <small>Catálogo, solicitudes, seguimiento y panel admin</small>
+          <small>Catálogo · solicitud · seguimiento · administración</small>
         </div>
-        <div className="architecture-arrow">↓ HTTP/JSON</div>
+        <div className="architecture-arrow">↓ HTTP/REST + JSON</div>
         <div className="architecture-services">
           <div className="architecture-node architecture-service">
             <span className="text-2xl">🐾</span>
             <strong>API Mascotas</strong>
-            <small>Puerto 8001 · esquema svc_mascotas</small>
+            <small>Catálogo y disponibilidad</small>
           </div>
           <div className="architecture-node architecture-service">
             <span className="text-2xl">🏠</span>
             <strong>API Adopciones</strong>
-            <small>Puerto 8002 · esquema svc_adopciones</small>
+            <small>Solicitudes y decisiones</small>
           </div>
         </div>
-        <div className="architecture-arrow">API Adopciones → API Mascotas: disponibilidad y estado</div>
+        <div className="architecture-connection">
+          <span>Adopciones consulta disponibilidad</span>
+          <strong>API Adopciones</strong>
+          <span>verifica y actualiza</span>
+          <strong>API Mascotas</strong>
+        </div>
+        <div className="architecture-arrow">↓ persistencia aislada por servicio</div>
         <div className="architecture-node architecture-database">
           <span className="text-2xl">🗄️</span>
           <strong>PostgreSQL / Supabase</strong>
-          <small>Persistencia independiente por servicio · sin FK entre APIs</small>
+          <small>svc_mascotas · svc_adopciones · sin FK entre APIs</small>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
+        <p className="eyebrow">Proceso de adopción</p>
+        <h3 className="mt-2 text-xl font-bold text-bosque">Del catálogo a un nuevo hogar</h3>
+        <div className="flow-steps mt-6">
+          <FlujoPaso numero="01" titulo="Consultar" texto="La persona explora mascotas disponibles y revisa su información." />
+          <FlujoPaso numero="02" titulo="Solicitar" texto="Completa el formulario y Adopciones valida disponibilidad." />
+          <FlujoPaso numero="03" titulo="Decidir" texto="El administrador aprueba o rechaza la solicitud." />
+          <FlujoPaso numero="04" titulo="Actualizar" texto="Mascotas cambia a adoptada y las demás solicitudes quedan rechazadas." />
         </div>
       </div>
 
@@ -176,6 +198,23 @@ function DocumentacionAdmin() {
       </div>
 
       <div className="mt-5 rounded-3xl bg-white p-6 shadow-sm">
+        <p className="eyebrow">Servicios desplegados</p>
+        <h3 className="mt-2 text-xl font-bold text-bosque">Servicios y documentación</h3>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {servicios.map((servicio) => (
+            <div key={servicio.nombre} className="rounded-2xl border border-slate-200 p-4">
+              <span className="text-sm font-bold text-bosque">{servicio.nombre}</span>
+              <span className="mt-1 block break-all text-sm text-slate-500">{servicio.url}</span>
+              <span className="mt-2 block text-xs text-slate-500">{servicio.descripcion}</span>
+              <a href={servicio.docs} target="_blank" rel="noreferrer" className="mt-3 inline-flex rounded-lg bg-bosque px-3 py-2 text-xs font-bold text-white transition hover:bg-hoja">
+                Abrir Swagger /docs
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-3xl bg-white p-6 shadow-sm">
         <div>
           <p className="eyebrow">Modelo de datos</p>
           <h3 className="mt-2 text-xl font-bold text-bosque">Dos esquemas autónomos</h3>
@@ -186,6 +225,18 @@ function DocumentacionAdmin() {
         </div>
       </div>
     </section>
+  )
+}
+
+function FlujoPaso({ numero, titulo, texto }) {
+  return (
+    <article className="flow-step">
+      <span className="flow-step-number">{numero}</span>
+      <div>
+        <h4 className="font-bold text-bosque">{titulo}</h4>
+        <p className="mt-1 text-sm leading-6 text-slate-600">{texto}</p>
+      </div>
+    </article>
   )
 }
 

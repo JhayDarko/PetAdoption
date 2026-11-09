@@ -36,8 +36,14 @@ button, input, select, textarea { font: inherit; }
 .architecture-node strong { @apply mt-2 text-sm; }
 .architecture-node small { @apply mt-1 text-xs leading-5 text-slate-300; }
 .architecture-arrow { @apply py-3 text-center text-xs font-semibold tracking-wide text-emerald-300; }
+.architecture-connection { @apply my-4 flex flex-wrap items-center justify-center gap-2 text-center text-xs text-slate-300; }
+.architecture-connection strong { @apply rounded-full border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-emerald-200; }
 .architecture-services { @apply grid gap-4 sm:grid-cols-2; }
 .architecture-service { @apply bg-emerald-900/40; }
 .architecture-frontend { @apply mx-auto max-w-md bg-terracota/30; }
 .architecture-user { @apply mx-auto max-w-sm bg-white/10; }
 .architecture-database { @apply mx-auto max-w-lg bg-slate-700/80; }
+.flow-steps { @apply grid gap-3 md:grid-cols-4; }
+.flow-step { @apply relative rounded-2xl border border-slate-200 bg-slate-50 p-4; }
+.flow-step-number { @apply grid h-8 w-8 place-items-center rounded-full bg-terracota text-xs font-bold text-white; }
+.flow-step:not(:last-child)::after { content: '→'; @apply absolute -right-3 top-1/2 z-10 hidden text-xl font-bold text-terracota md:block; }

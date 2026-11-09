@@ -114,7 +114,7 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8002
 
 Swagger: <http://127.0.0.1:8002/docs>
 
-Para configurar una conexión a PostgreSQL u otras variables, copia el `.env.example` del servicio correspondiente a `.env` y completa los valores localmente. No subas el archivo `.env`.
+Para configurar una conexión a PostgreSQL u otras variables, copia el `.env.example` del servicio correspondiente a `.env` y completa los valores localmente. No subas el archivo `.env`. Las APIs aceptan solicitudes CORS desde cualquier origen para permitir que el frontend de Vercel cambie de dominio sin volver a configurar las APIs; la autenticación administrativa continúa protegida por `X-API-Key`.
 
 ### Pruebas locales
 

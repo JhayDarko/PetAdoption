@@ -1,5 +1,5 @@
-const mascotasUrl = import.meta.env.VITE_API_MASCOTAS_URL || 'http://127.0.0.1:8001'
-const adopcionesUrl = import.meta.env.VITE_API_ADOPCIONES_URL || 'http://127.0.0.1:8002'
+export const mascotasUrl = import.meta.env.VITE_API_MASCOTAS_URL || 'http://127.0.0.1:8001'
+export const adopcionesUrl = import.meta.env.VITE_API_ADOPCIONES_URL || 'http://127.0.0.1:8002'
 
 async function solicitar(url, opciones = {}) {
   const respuesta = await fetch(url, {
