@@ -69,9 +69,12 @@ API Adopciones --HTTP/REST + JSON--> API Mascotas
 ```
 
 Cada API es autónoma y escribe únicamente en su propio esquema. Adopciones no
-consulta directamente la base de datos de Mascotas: verifica disponibilidad y
-actualiza estados mediante HTTP. La base de datos impide dos adopciones
-aprobadas para la misma mascota mediante un índice único parcial.
+consulta directamente la base de datos de Mascotas para ejecutar operaciones:
+verifica disponibilidad y actualiza estados mediante HTTP. La base de datos
+mantiene además una referencia de integridad entre `solicitudes.mascota_id` y
+`mascotas.id`, evitando solicitudes huérfanas cuando ambos esquemas viven en la
+misma instancia Supabase. También impide dos adopciones aprobadas para la misma
+mascota mediante un índice único parcial.
 
 ## Flujo principal demostrado
 
@@ -186,6 +189,11 @@ Las variables del despliegue deben ser coherentes:
 Si crear una mascota funciona directamente, pero crear una solicitud responde
 `404 La mascota no existe`, revisa primero `MASCOTAS_API_URL` en Adopciones:
 normalmente apunta a otra URL, otro despliegue o una base de datos distinta.
+Para comprobar la configuración, toma un `id` visible en
+`https://mascotas-jhsx.onrender.com/mascotas?limit=100` y consulta ese mismo
+registro desde el flujo de creación de Adopciones. Si Mascotas responde `200`
+pero Adopciones responde `404`, actualiza `MASCOTAS_API_URL` en Render a
+`https://mascotas-jhsx.onrender.com` y vuelve a desplegar Adopciones.
 
 ### Casos cubiertos por la integración
 
@@ -214,8 +222,8 @@ datos de prueba o información del entorno.
 
 ### Reiniciar y cargar datos de demostración
 
-El archivo [db/seed.sql](db/seed.sql) prepara los esquemas, tablas e índices si
-faltan, reinicia los datos de las dos tablas y carga 50 mascotas con escenarios
+El archivo [db/seed.sql](db/seed.sql) reconstruye los esquemas, tablas e índices
+y carga 50 mascotas con escenarios
 realistas:
 
 - 30 mascotas disponibles.
@@ -225,9 +233,10 @@ realistas:
 - Mascotas disponibles sin solicitudes para probar el catálogo.
 
 Ejecuta `db/seed.sql` en Supabase solo cuando quieras reemplazar los datos
-actuales. El script usa una transacción y conserva los datos estructurales.
-También puedes ejecutar primero [db/schema.sql](db/schema.sql); el seed es
-idempotente respecto a la creación de tablas e índices.
+actuales: es un script destructivo que elimina y recrea `svc_mascotas` y
+`svc_adopciones`. El script usa una transacción y debe ejecutarse completo.
+También puedes ejecutar primero [db/schema.sql](db/schema.sql) si solo quieres
+crear la estructura sin cargar datos.
 
 El seed asigna imágenes remotas de perros o gatos según la especie mediante
 URLs directas del CDN de Unsplash. No se almacenan imágenes ni archivos

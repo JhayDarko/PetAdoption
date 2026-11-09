@@ -22,7 +22,9 @@ CREATE INDEX ix_mascotas_estado_especie
 
 CREATE TABLE svc_adopciones.solicitudes (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    mascota_id uuid NOT NULL,
+    mascota_id uuid NOT NULL
+        REFERENCES svc_mascotas.mascotas (id)
+        ON DELETE RESTRICT,
     nombre_solicitante text NOT NULL,
     documento text NOT NULL,
     email text NOT NULL,

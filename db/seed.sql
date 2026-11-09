@@ -1,9 +1,12 @@
 BEGIN;
 
--- Preparación idempotente para Supabase.
+-- Reconstrucción limpia para mantener consistencia entre los dos servicios.
+-- Este script es destructivo: elimina los datos y las tablas de ambos esquemas.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
-CREATE SCHEMA IF NOT EXISTS svc_mascotas;
-CREATE SCHEMA IF NOT EXISTS svc_adopciones;
+DROP SCHEMA IF EXISTS svc_adopciones CASCADE;
+DROP SCHEMA IF EXISTS svc_mascotas CASCADE;
+CREATE SCHEMA svc_mascotas;
+CREATE SCHEMA svc_adopciones;
 
 CREATE TABLE IF NOT EXISTS svc_mascotas.mascotas (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,7 +26,9 @@ CREATE TABLE IF NOT EXISTS svc_mascotas.mascotas (
 
 CREATE TABLE IF NOT EXISTS svc_adopciones.solicitudes (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    mascota_id uuid NOT NULL,
+    mascota_id uuid NOT NULL
+        REFERENCES svc_mascotas.mascotas (id)
+        ON DELETE RESTRICT,
     nombre_solicitante text NOT NULL,
     documento text NOT NULL,
     email text NOT NULL,
@@ -51,10 +56,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_pendiente_por_persona
 
 CREATE INDEX IF NOT EXISTS ix_solicitudes_estado
     ON svc_adopciones.solicitudes (estado);
-
--- Reinicio de datos de demostración. No elimina tablas, esquemas ni índices.
-DELETE FROM svc_adopciones.solicitudes;
-DELETE FROM svc_mascotas.mascotas;
 
 INSERT INTO svc_mascotas.mascotas (
     nombre, especie, raza, sexo, edad_meses, tamano, descripcion, foto_url, estado

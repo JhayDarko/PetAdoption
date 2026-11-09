@@ -28,7 +28,7 @@ async def obtener_disponibilidad(mascota_id: uuid.UUID) -> dict:
             if response.status_code == 404:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="La mascota no existe.",
+                    detail=f"La mascota {mascota_id} no existe en la API de Mascotas.",
                 )
             
             response.raise_for_status()
@@ -64,7 +64,7 @@ async def marcar_adoptada(mascota_id: uuid.UUID) -> dict:
             if response.status_code == 404:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="La mascota no existe.",
+                    detail=f"La mascota {mascota_id} no existe en la API de Mascotas.",
                 )
             if response.status_code == 401:
                 raise HTTPException(
