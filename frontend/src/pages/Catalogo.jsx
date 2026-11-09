@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react'
+import { Box, Chip, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import { listarMascotas } from '../api'
 import { AvisoServidor, Cargando, ErrorPeticion } from '../components/EstadoPeticion'
 import { usePeticion } from '../components/usePeticion'
@@ -12,29 +14,25 @@ export default function Catalogo() {
 
   return (
     <section>
-      <div className="hero-panel mb-8 overflow-hidden rounded-[2rem] bg-bosque px-6 py-10 text-white sm:px-10 sm:py-14">
-        <div className="relative z-10 max-w-2xl">
-          <p className="eyebrow text-emerald-200">Adopta con amor</p>
-          <h1 className="mt-3 max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-6xl">Un hogar cambia dos vidas.</h1>
-          <p className="mt-5 max-w-xl text-base leading-7 text-emerald-50 sm:text-lg">Conoce a los animales que esperan una familia responsable, paciente y llena de cariño.</p>
-          <div className="mt-8 flex flex-wrap gap-3 text-sm"><span className="rounded-full bg-white/10 px-4 py-2 text-emerald-50">🐾 Adopción responsable</span><span className="rounded-full bg-white/10 px-4 py-2 text-emerald-50">🤍 Compañía para siempre</span></div>
-        </div>
-      </div>
-      <div className="filter-card mb-8 grid gap-4 rounded-2xl bg-white p-5 shadow-sm sm:grid-cols-[12rem_1fr]">
-        <label className="field-label">Especie
-          <select value={especie} onChange={(e) => setEspecie(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-hoja">
-            <option value="">Todas</option><option value="perro">Perros</option><option value="gato">Gatos</option><option value="otro">Otros</option>
-          </select>
-        </label>
-        <label className="field-label">Buscar por nombre
-          <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Ej. Luna" className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal outline-none focus:border-hoja" />
-        </label>
-      </div>
+      <Box sx={{ mb: 4, p: { xs: 3, md: 6 }, borderRadius: 5, color: 'white', bgcolor: 'primary.dark', position: 'relative', overflow: 'hidden', '&:after': { content: '""', position: 'absolute', width: 280, height: 280, borderRadius: '50%', bgcolor: 'secondary.main', opacity: .25, right: -80, bottom: -120 } }}>
+        <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 680 }}>
+          <Chip label="ADOPTA CON AMOR" size="small" sx={{ bgcolor: 'rgba(255,255,255,.14)', color: 'white', fontWeight: 800, letterSpacing: 1 }} />
+          <Typography variant="h1" sx={{ mt: 2, fontSize: { xs: '2.5rem', md: '4.5rem' } }}>Un hogar cambia dos vidas.</Typography>
+          <Typography sx={{ mt: 2, color: 'rgba(255,255,255,.82)', fontSize: { md: '1.1rem' }, maxWidth: 560 }}>Conoce a los animales que esperan una familia responsable, paciente y llena de cariño.</Typography>
+          <Stack direction="row" spacing={1} sx={{ mt: 3, flexWrap: 'wrap', gap: 1 }}><Chip label="Adopción responsable" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,.12)' }} /><Chip label="Compañía para siempre" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,.12)' }} /></Stack>
+        </Box>
+      </Box>
+      <Paper sx={{ mb: 4, p: 2.5, border: '1px solid', borderColor: 'divider' }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={5} md={4}><FormControl fullWidth size="small"><InputLabel>Tipo de mascota</InputLabel><Select value={especie} label="Tipo de mascota" onChange={(e) => setEspecie(e.target.value)} sx={{ minWidth: { sm: 180 } }}><MenuItem value="">Todas</MenuItem><MenuItem value="perro">Perros</MenuItem><MenuItem value="gato">Gatos</MenuItem><MenuItem value="otro">Otros</MenuItem></Select></FormControl></Grid>
+          <Grid item xs={12} sm={8}><TextField fullWidth label="Buscar por nombre" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Ej. Luna" InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon color="action" /></InputAdornment> }} /></Grid>
+        </Grid>
+      </Paper>
       {lenta && <AvisoServidor />}
       {cargando && <Cargando texto="Buscando mascotas disponibles..." />}
-      {!cargando && error && <ErrorPeticion error={error} reintentar={() => cargar()} />}
-      {!cargando && !error && datos?.length === 0 && <p className="rounded-2xl bg-white p-8 text-center text-slate-600 shadow-sm">No encontramos mascotas con esos filtros.</p>}
-      {!cargando && !error && datos?.length > 0 && <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{datos.map((mascota) => <TarjetaMascota key={mascota.id} mascota={mascota} />)}</div>}
+      {!cargando && error && <ErrorPeticion error={error} reintentar={cargar} />}
+      {!cargando && !error && datos?.length === 0 && <Paper sx={{ p: 6, textAlign: 'center' }}><Typography color="text.secondary">No encontramos mascotas con esos filtros.</Typography></Paper>}
+      {!cargando && !error && datos?.length > 0 && <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 2, md: 2.5 } }}>{datos.map((mascota) => <TarjetaMascota key={mascota.id} mascota={mascota} />)}</Box>}
     </section>
   )
 }

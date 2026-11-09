@@ -9,6 +9,7 @@ import {
   rechazarSolicitud,
 } from '../api'
 import { AvisoServidor, Cargando, ErrorPeticion, mensajeError } from '../components/EstadoPeticion'
+import { EtiquetaEstado } from '../components/EtiquetaEstado'
 
 const claveStorage = 'admin_api_key'
 const mascotaInicial = {
@@ -92,33 +93,43 @@ export default function Admin() {
         <button onClick={() => setPestana('solicitudes')} className={`admin-tab ${pestana === 'solicitudes' ? 'admin-tab-active' : ''}`}>
           Solicitudes
         </button>
+        <button onClick={() => setPestana('documentacion')} className={`admin-tab ${pestana === 'documentacion' ? 'admin-tab-active' : ''}`}>
+          Arquitectura
+        </button>
       </div>
-      {pestana === 'mascotas'
-        ? <MascotasAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />
-        : <SolicitudesAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />}
-      <DocumentacionAdmin />
+      {pestana === 'mascotas' && <MascotasAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />}
+      {pestana === 'solicitudes' && <SolicitudesAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />}
+      {pestana === 'documentacion' && <DocumentacionAdmin />}
     </section>
   )
 }
 
 function DocumentacionAdmin() {
   const servicios = [
-    { nombre: 'API Mascotas', url: 'https://mascotas-jhsx.onrender.com', docs: 'https://mascotas-jhsx.onrender.com/docs', descripcion: 'Catálogo, disponibilidad y estados' },
-    { nombre: 'API Adopciones', url: 'https://adoption-hdh3.onrender.com', docs: 'https://adoption-hdh3.onrender.com/docs', descripcion: 'Solicitudes, seguimiento y decisiones' },
+    { nombre: 'API Mascotas', url: 'https://mascotas-jhsx.onrender.com', docs: 'https://mascotas-jhsx.onrender.com/docs', descripcion: 'Catálogo, disponibilidad y estados', endpoints: 'GET /mascotas · POST /mascotas · PATCH /mascotas/{id}/estado' },
+    { nombre: 'API Adopciones', url: 'https://adoption-hdh3.onrender.com', docs: 'https://adoption-hdh3.onrender.com/docs', descripcion: 'Solicitudes, seguimiento y decisiones', endpoints: 'POST /solicitudes · GET /seguimiento · PATCH /solicitudes/{id}/aprobar' },
   ]
 
   return (
-    <section className="admin-documentation mt-12 border-t border-emerald-950/10 pt-10">
-      <div className="max-w-3xl">
-        <p className="eyebrow">Sustentación del proyecto</p>
-        <h2 className="mt-2 text-2xl font-bold text-bosque sm:text-3xl">Arquitectura y flujo de adopción</h2>
-        <p className="mt-3 text-slate-600">
-          Plataforma SOA para la Fundación Huellas de Esperanza, compuesta por
-          dos servicios autónomos, un frontend web y PostgreSQL en Supabase.
-        </p>
+    <section className="admin-documentation mt-6">
+      <div className="rounded-3xl bg-gradient-to-br from-bosque to-emerald-900 p-6 text-white shadow-xl shadow-emerald-950/10 sm:p-9">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">Guía de presentación</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Arquitectura y flujo de adopción</h2>
+            <p className="mt-3 max-w-2xl leading-7 text-emerald-50">
+              Una vista técnica y visual para explicar cómo colaboran el frontend,
+              las APIs y la persistencia de datos.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-emerald-50">
+            <span className="block text-xs font-bold uppercase tracking-wider text-emerald-200">Arquitectura</span>
+            SOA · REST · PostgreSQL
+          </div>
+        </div>
       </div>
 
-      <div className="admin-architecture mt-8 rounded-3xl bg-slate-950 p-5 text-white shadow-xl shadow-emerald-950/10 sm:p-8">
+      <div className="admin-architecture mt-6 rounded-3xl bg-slate-950 p-5 text-white shadow-xl shadow-emerald-950/10 sm:p-8">
         <div className="architecture-node architecture-user">
           <span className="text-2xl">👤</span>
           <strong>Usuario / Administrador</strong>
@@ -153,11 +164,11 @@ function DocumentacionAdmin() {
         <div className="architecture-node architecture-database">
           <span className="text-2xl">🗄️</span>
           <strong>PostgreSQL / Supabase</strong>
-          <small>svc_mascotas · svc_adopciones · sin FK entre APIs</small>
+          <small>svc_mascotas · svc_adopciones · persistencia separada</small>
         </div>
       </div>
 
-      <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <p className="eyebrow">Proceso de adopción</p>
         <h3 className="mt-2 text-xl font-bold text-bosque">Del catálogo a un nuevo hogar</h3>
         <div className="flow-steps mt-6">
@@ -168,7 +179,7 @@ function DocumentacionAdmin() {
         </div>
       </div>
 
-      <div className="mt-8 grid gap-5 lg:grid-cols-3">
+      <div className="mt-6 grid gap-5 lg:grid-cols-3">
         <InfoDocumentacion
           titulo="Responsabilidades"
           items={[
@@ -197,7 +208,71 @@ function DocumentacionAdmin() {
         />
       </div>
 
-      <div className="mt-5 rounded-3xl bg-white p-6 shadow-sm">
+      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        <InfoDocumentacion
+          titulo="Reglas de negocio"
+          items={[
+            'Solo se pueden solicitar mascotas disponibles.',
+            'Una persona no puede duplicar una solicitud pendiente para la misma mascota.',
+            'Aprobar cambia la mascota a adoptada y rechaza las demás solicitudes pendientes.',
+            'Rechazar registra el motivo y conserva la mascota disponible.',
+          ]}
+        />
+        <InfoDocumentacion
+          titulo="Seguridad y resiliencia"
+          items={[
+            'Las operaciones administrativas requieren X-API-Key.',
+            'La comunicación interna entre servicios usa X-Service-Key.',
+            'La aprobación usa bloqueo de fila y restricciones únicas.',
+            'Los fallos de Mascotas provocan rollback y respuesta 503.',
+          ]}
+        />
+      </div>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-3">
+        <InfoDocumentacion
+          titulo="Objetivo del sistema"
+          items={[
+            'Centralizar el catálogo de mascotas disponibles.',
+            'Permitir solicitudes de adopción con seguimiento por documento.',
+            'Garantizar decisiones consistentes entre Mascotas y Adopciones.',
+          ]}
+        />
+        <InfoDocumentacion
+          titulo="Tecnologías"
+          items={[
+            'React, Vite y Material UI en el frontend.',
+            'FastAPI, Pydantic y SQLAlchemy en los servicios.',
+            'PostgreSQL/Supabase para persistencia aislada por esquema.',
+          ]}
+        />
+        <InfoDocumentacion
+          titulo="Criterios de calidad"
+          items={[
+            'Validación de datos en frontend y backend.',
+            'Estados HTTP claros para errores y conflictos.',
+            'Interfaz responsive y accesible para los roles.',
+          ]}
+        />
+      </div>
+
+      <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <p className="eyebrow">Integración entre APIs</p>
+        <h3 className="mt-2 text-xl font-bold text-bosque">Qué ocurre al aprobar una solicitud</h3>
+        <div className="mt-5 grid gap-3 md:grid-cols-5">
+          <PasoTecnico numero="1" texto="Admin envía PATCH a Adopciones." />
+          <PasoTecnico numero="2" texto="Adopciones bloquea la solicitud pendiente." />
+          <PasoTecnico numero="3" texto="Adopciones consulta disponibilidad." />
+          <PasoTecnico numero="4" texto="Mascotas cambia el estado a adoptada." />
+          <PasoTecnico numero="5" texto="Adopciones confirma y persiste la decisión." />
+        </div>
+        <p className="mt-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
+          La integración es REST/JSON: Adopciones no modifica directamente la tabla
+          de Mascotas. Cada servicio conserva la responsabilidad de sus propios datos.
+        </p>
+      </div>
+
+      <div className="mt-6 rounded-3xl bg-white p-6 shadow-sm sm:p-8">
         <p className="eyebrow">Servicios desplegados</p>
         <h3 className="mt-2 text-xl font-bold text-bosque">Servicios y documentación</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -206,6 +281,7 @@ function DocumentacionAdmin() {
               <span className="text-sm font-bold text-bosque">{servicio.nombre}</span>
               <span className="mt-1 block break-all text-sm text-slate-500">{servicio.url}</span>
               <span className="mt-2 block text-xs text-slate-500">{servicio.descripcion}</span>
+              <code className="mt-3 block rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600">{servicio.endpoints}</code>
               <a href={servicio.docs} target="_blank" rel="noreferrer" className="mt-3 inline-flex rounded-lg bg-bosque px-3 py-2 text-xs font-bold text-white transition hover:bg-hoja">
                 Abrir Swagger /docs
               </a>
@@ -214,7 +290,7 @@ function DocumentacionAdmin() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-3xl bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div>
           <p className="eyebrow">Modelo de datos</p>
           <h3 className="mt-2 text-xl font-bold text-bosque">Dos esquemas autónomos</h3>
@@ -224,8 +300,13 @@ function DocumentacionAdmin() {
           </div>
         </div>
       </div>
+
     </section>
   )
+}
+
+function PasoTecnico({ numero, texto }) {
+  return <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="grid h-8 w-8 place-items-center rounded-full bg-terracota text-xs font-bold text-white">{numero}</span><p className="mt-3 text-sm leading-6 text-slate-600">{texto}</p></div>
 }
 
 function FlujoPaso({ numero, titulo, texto }) {
@@ -269,6 +350,16 @@ function MascotasAdmin({ onUnauthorized, onMensaje }) {
   const [formulario, setFormulario] = useState(null)
   const [mascotaEliminar, setMascotaEliminar] = useState(null)
   const [eliminando, setEliminando] = useState(false)
+
+  useEffect(() => {
+    if (!formulario) return
+    requestAnimationFrame(() => {
+      document.getElementById('formulario-mascota')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    })
+  }, [formulario])
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -327,7 +418,7 @@ function MascotasAdmin({ onUnauthorized, onMensaje }) {
       <button onClick={() => setFormulario({ datos: mascotaInicial, id: null })} className="mb-4 rounded-xl bg-terracota px-4 py-3 font-semibold text-white hover:bg-orange-700">
         Crear mascota
       </button>
-      {formulario && <MascotaFormulario inicial={formulario.datos} id={formulario.id} onGuardar={guardar} onCancelar={() => setFormulario(null)} />}
+      {formulario && <div id="formulario-mascota" className="scroll-mt-24"><MascotaFormulario inicial={formulario.datos} id={formulario.id} onGuardar={guardar} onCancelar={() => setFormulario(null)} /></div>}
       <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3">Nombre</th><th className="px-4 py-3">Especie</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Acciones</th></tr></thead>
@@ -513,8 +604,7 @@ function mensajeAccion(error) {
 }
 
 function Estado({ estado }) {
-  const colores = { disponible: 'bg-emerald-100 text-emerald-800', pendiente: 'bg-amber-100 text-amber-800', aprobada: 'bg-emerald-100 text-emerald-800', rechazada: 'bg-red-100 text-red-800', adoptada: 'bg-slate-100 text-slate-700' }
-  return <span className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${colores[estado] || 'bg-slate-100 text-slate-700'}`}>{estado}</span>
+  return <EtiquetaEstado estado={estado} compact />
 }
 
 function Aviso({ tipo, children }) {

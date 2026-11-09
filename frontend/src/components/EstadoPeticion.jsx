@@ -1,18 +1,17 @@
+import { Alert, Box, CircularProgress, Button, Typography } from '@mui/material'
+
 export function Cargando({ texto = 'Cargando...' }) {
-  return <p className="rounded-2xl bg-white p-8 text-center text-slate-600 shadow-sm">{texto}</p>
+  return <Box sx={{ py: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}><CircularProgress size={24} color="primary" /><Typography color="text.secondary">{texto}</Typography></Box>
 }
 
 export function ErrorPeticion({ error, reintentar }) {
   return (
-    <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800">
-      <p className="font-semibold">{mensajeError(error)}</p>
-      {reintentar && <button onClick={reintentar} className="mt-4 rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white">Intentar de nuevo</button>}
-    </div>
+    <Alert severity="error" action={reintentar && <Button color="inherit" size="small" onClick={reintentar}>Reintentar</Button>}>{mensajeError(error)}</Alert>
   )
 }
 
 export function AvisoServidor() {
-  return <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">El servidor está despertando, intenta de nuevo.</p>
+  return <Alert severity="warning" sx={{ mt: 2 }}>El servidor está despertando, intenta de nuevo.</Alert>
 }
 
 export function mensajeError(error) {
