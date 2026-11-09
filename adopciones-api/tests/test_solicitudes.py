@@ -320,6 +320,14 @@ def test_aprobar_solicitud():
         assert data["estado"] == "aprobada"
         assert data["decided_at"] is not None
 
+        # La lectura posterior debe conservar la aprobación.
+        consulta = client.get(
+            f"/solicitudes/{solicitud_id}",
+            headers={"X-API-Key": settings.ADMIN_API_KEY},
+        )
+        assert consulta.status_code == 200
+        assert consulta.json()["estado"] == "aprobada"
+
 
 def test_aprobar_solicitud_sin_admin_retorna_401():
     """Aprobar solicitud sin admin key retorna 401."""

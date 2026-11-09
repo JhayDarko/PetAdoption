@@ -66,7 +66,21 @@ async def marcar_adoptada(mascota_id: uuid.UUID) -> dict:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="La mascota no existe.",
                 )
-            
+            if response.status_code == 401:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="La API de Mascotas rechazó la clave de servicio.",
+                )
+            if response.status_code == 409:
+                detalle = "La mascota no puede marcarse como adoptada."
+                try:
+                    detalle = response.json().get("detail", detalle)
+                except ValueError:
+                    pass
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=detalle,
+                )
             response.raise_for_status()
             return response.json()
     except HTTPException:

@@ -217,8 +217,15 @@ async def aprobar_solicitud(
         raise e
     
     # Paso 6: Commit
-    db.commit()
-    db.refresh(solicitud)
+    try:
+        db.commit()
+        db.refresh(solicitud)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No fue posible aprobar la solicitud porque la mascota ya tiene una adopción aprobada.",
+        )
     
     return SolicitudOut.model_validate(solicitud)
 
