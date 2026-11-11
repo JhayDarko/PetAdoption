@@ -117,7 +117,7 @@ python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8002
 
 Swagger: <http://127.0.0.1:8002/docs>
 
-Para configurar una conexión a PostgreSQL u otras variables, copia el `.env.example` del servicio correspondiente a `.env` y completa los valores localmente. No subas el archivo `.env`. Las APIs aceptan solicitudes CORS desde cualquier origen para permitir que el frontend de Vercel cambie de dominio sin volver a configurar las APIs; la autenticación administrativa continúa protegida por `X-API-Key`.
+Para configurar una conexión a PostgreSQL u otras variables, copia el `.env.example` del servicio correspondiente a `.env` y completa los valores localmente. No subas el archivo `.env`. Las APIs aceptan solicitudes CORS desde cualquier origen para permitir que el frontend de Vercel cambie de dominio sin volver a configurar las APIs; la autenticación administrativa usa JWT con rol `admin` (se mantiene `X-API-Key` como compatibilidad temporal).
 
 ### Pruebas locales
 
@@ -156,9 +156,10 @@ VITE_API_ADOPCIONES_URL=http://127.0.0.1:8002
 
 ### Acceso administrativo
 
-Abre <http://127.0.0.1:5173/admin> e introduce `ADMIN_API_KEY`. La clave se
-guarda únicamente en `sessionStorage`, se elimina al cerrar sesión o cuando una
-API responde `401`, y no se persiste como dato de negocio.
+Abre <http://127.0.0.1:5173/admin> e introduce `ADMIN_USERNAME` y la contraseña
+configurada en Adopciones. El JWT se guarda únicamente en `sessionStorage`, se
+elimina al cerrar sesión o cuando una API responde `401`, y no se persiste como
+dato de negocio.
 
 ### Pruebas de integración desplegadas
 
@@ -185,6 +186,29 @@ Las variables del despliegue deben ser coherentes:
 - `SERVICE_KEY` debe tener el mismo valor en ambas APIs.
 - Ambas APIs deben usar la base de datos Supabase esperada y sus esquemas
   `svc_mascotas` y `svc_adopciones`.
+
+### Acceso administrativo
+
+El panel administrativo usa inicio de sesión con JWT y rol `admin`. Configura
+en Adopciones:
+
+```text
+JWT_SECRET=un-secreto-largo-y-aleatorio
+JWT_EXPIRE_MINUTES=480
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD_HASH=<hash generado con pwdlib>
+```
+
+Configura el mismo `JWT_SECRET` en Mascotas para que ambos servicios validen el
+token. Genera el hash sin guardar la contraseña en el repositorio:
+
+```powershell
+python -c "from pwdlib import PasswordHash; print(PasswordHash.recommended().hash('CAMBIA_ESTA_CONTRASEÑA'))"
+```
+
+El frontend guarda únicamente el token temporal en `sessionStorage`. Las rutas
+administrativas de ambas APIs validan el rol; ocultar el enlace en el frontend
+es solo una mejora de navegación y no sustituye la autorización del backend.
 
 Si crear una mascota funciona directamente, pero crear una solicitud responde
 `404 La mascota no existe`, revisa primero `MASCOTAS_API_URL` en Adopciones:
@@ -263,10 +287,11 @@ existe igualmente y las APIs la consultan mediante su nombre completo.
 
 Con ambas APIs desplegadas:
 
-1. Abrir `/docs` de Mascotas y crear una mascota con `X-API-Key`.
-2. Copiar el `id` devuelto.
-3. En Adopciones, ejecutar `POST /solicitudes` con ese `mascota_id`.
-4. En `GET /solicitudes`, usar la clave administrativa y localizar la solicitud.
+1. Abrir `/docs` de Adopciones, ejecutar `POST /auth/login` y copiar el JWT.
+2. Abrir `/docs` de Mascotas y crear una mascota con `Authorization: Bearer <JWT>`.
+3. Copiar el `id` devuelto.
+4. En Adopciones, ejecutar `POST /solicitudes` con ese `mascota_id`.
+5. En `GET /solicitudes`, usar el mismo JWT como Bearer y localizar la solicitud.
 5. Ejecutar `PATCH /solicitudes/{id}/aprobar`.
 6. Consultar la mascota en Mascotas y verificar `estado: adoptada`.
 7. Crear dos solicitudes para otra mascota y aprobar una; verificar que la otra

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink, Route, Routes } from 'react-router-dom'
 import { AppBar, Box, Button, Container, CssBaseline, Stack, Toolbar, Typography } from '@mui/material'
 import PetsRoundedIcon from '@mui/icons-material/PetsRounded'
@@ -12,6 +13,12 @@ import Admin from './pages/Admin'
 import { theme } from './theme'
 
 function Layout({ children }) {
+  const [sesionActiva, setSesionActiva] = useState(() => Boolean(sessionStorage.getItem('admin_access_token')))
+  useEffect(() => {
+    const actualizarSesion = () => setSesionActiva(Boolean(sessionStorage.getItem('admin_access_token')))
+    window.addEventListener('admin-auth-changed', actualizarSesion)
+    return () => window.removeEventListener('admin-auth-changed', actualizarSesion)
+  }, [])
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
       <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider', backdropFilter: 'blur(14px)', bgcolor: 'rgba(255,255,255,.9)' }}>
@@ -30,7 +37,7 @@ function Layout({ children }) {
           <Stack direction="row" spacing={1} component="nav" aria-label="Navegación principal">
             <Button component={NavLink} to="/" startIcon={<PetsRoundedIcon />} sx={{ color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'primary.50' } }}>Catálogo</Button>
             <Button component={NavLink} to="/seguimiento" startIcon={<SearchRoundedIcon />} sx={{ color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'primary.50' } }}>Seguimiento</Button>
-            <Button component={NavLink} to="/admin" startIcon={<AdminPanelSettingsRoundedIcon />} sx={{ color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'primary.50' } }}>Admin</Button>
+            {sesionActiva && <Button component={NavLink} to="/admin" startIcon={<AdminPanelSettingsRoundedIcon />} sx={{ color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'primary.50' } }}>Admin</Button>}
           </Stack>
         </Toolbar>
       </AppBar>

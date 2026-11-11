@@ -50,13 +50,21 @@ export function seguimiento(documento) {
   return solicitar(`${adopcionesUrl}/solicitudes/seguimiento?${parametros}`)
 }
 
+export function loginAdmin(username, password) {
+  return solicitar(`${adopcionesUrl}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+}
+
 function opcionesAdmin(opciones = {}) {
-  const clave = sessionStorage.getItem('admin_api_key') || ''
+  const token = sessionStorage.getItem('admin_access_token') || ''
   return {
     ...opciones,
     headers: {
       ...opciones.headers,
-      'X-API-Key': clave,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   }
 }

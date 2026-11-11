@@ -7,46 +7,60 @@ import {
   listarMascotasAdmin,
   listarSolicitudes,
   rechazarSolicitud,
+  loginAdmin,
 } from '../api'
 import { AvisoServidor, Cargando, ErrorPeticion, mensajeError } from '../components/EstadoPeticion'
 import { EtiquetaEstado } from '../components/EtiquetaEstado'
 
-const claveStorage = 'admin_api_key'
+const tokenStorage = 'admin_access_token'
 const mascotaInicial = {
   nombre: '', especie: 'perro', raza: '', sexo: '', edad_meses: '', tamano: '',
   descripcion: '', foto_url: '',
 }
 
 export default function Admin() {
-  const [clave, setClave] = useState(() => sessionStorage.getItem(claveStorage) || '')
-  const [claveIngresada, setClaveIngresada] = useState('')
+  const [token, setToken] = useState(() => sessionStorage.getItem(tokenStorage) || '')
+  const [usuario, setUsuario] = useState('')
+  const [contrasena, setContrasena] = useState('')
+  const [iniciandoSesion, setIniciandoSesion] = useState(false)
   const [mensaje, setMensaje] = useState(null)
   const [pestana, setPestana] = useState('mascotas')
-  function iniciarSesion(evento) {
+  async function iniciarSesion(evento) {
     evento.preventDefault()
-    if (!claveIngresada.trim()) {
-      setMensaje({ tipo: 'error', texto: 'Ingresa la clave de administrador.' })
+    if (!usuario.trim() || !contrasena) {
+      setMensaje({ tipo: 'error', texto: 'Ingresa usuario y contraseña.' })
       return
     }
-    sessionStorage.setItem(claveStorage, claveIngresada.trim())
-    setClave(claveIngresada.trim())
-    setClaveIngresada('')
-    setMensaje(null)
+    setIniciandoSesion(true)
+    try {
+      const resultado = await loginAdmin(usuario.trim(), contrasena)
+      sessionStorage.setItem(tokenStorage, resultado.access_token)
+      setToken(resultado.access_token)
+      setContrasena('')
+      setMensaje(null)
+      window.dispatchEvent(new Event('admin-auth-changed'))
+    } catch (fallo) {
+      setMensaje({ tipo: 'error', texto: fallo.status === 401 ? 'Usuario o contraseña inválidos.' : (fallo.detail || 'No fue posible iniciar sesión.') })
+    } finally {
+      setIniciandoSesion(false)
+    }
   }
 
   function cerrarSesion() {
-    sessionStorage.removeItem(claveStorage)
-    setClave('')
+    sessionStorage.removeItem(tokenStorage)
+    setToken('')
     setMensaje({ tipo: 'info', texto: 'Sesión cerrada.' })
+    window.dispatchEvent(new Event('admin-auth-changed'))
   }
 
   function perderSesion() {
-    sessionStorage.removeItem(claveStorage)
-    setClave('')
-    setMensaje({ tipo: 'error', texto: 'La clave no es válida o la sesión expiró. Ingresa una clave válida.' })
+    sessionStorage.removeItem(tokenStorage)
+    setToken('')
+    setMensaje({ tipo: 'error', texto: 'La sesión no es válida o expiró. Inicia sesión nuevamente.' })
+    window.dispatchEvent(new Event('admin-auth-changed'))
   }
 
-  if (!clave) {
+  if (!token) {
     return (
       <section className="admin-login mx-auto max-w-md rounded-[2rem] bg-white p-8 shadow-xl shadow-emerald-950/5 sm:p-10">
         <div className="mb-8 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-2xl">🔐</div>
@@ -56,17 +70,27 @@ export default function Admin() {
         {mensaje && <Aviso tipo={mensaje.tipo}>{mensaje.texto}</Aviso>}
         <form onSubmit={iniciarSesion} className="mt-6">
           <label className="text-sm font-semibold text-slate-700">
-            Clave de API
+            Usuario
+            <input
+              type="text"
+              value={usuario}
+              onChange={(evento) => setUsuario(evento.target.value)}
+              className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-hoja"
+              autoComplete="username"
+            />
+          </label>
+          <label className="mt-4 block text-sm font-semibold text-slate-700">
+            Contraseña
             <input
               type="password"
-              value={claveIngresada}
-              onChange={(evento) => setClaveIngresada(evento.target.value)}
+              value={contrasena}
+              onChange={(evento) => setContrasena(evento.target.value)}
               className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-hoja"
               autoComplete="current-password"
             />
           </label>
-          <button className="primary-button mt-5 w-full">
-            Ingresar
+          <button disabled={iniciandoSesion} className="primary-button mt-5 w-full disabled:opacity-60">
+            {iniciandoSesion ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
       </section>
@@ -93,13 +117,9 @@ export default function Admin() {
         <button onClick={() => setPestana('solicitudes')} className={`admin-tab ${pestana === 'solicitudes' ? 'admin-tab-active' : ''}`}>
           Solicitudes
         </button>
-        <button onClick={() => setPestana('documentacion')} className={`admin-tab ${pestana === 'documentacion' ? 'admin-tab-active' : ''}`}>
-          Arquitectura
-        </button>
       </div>
       {pestana === 'mascotas' && <MascotasAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />}
       {pestana === 'solicitudes' && <SolicitudesAdmin onUnauthorized={perderSesion} onMensaje={setMensaje} />}
-      {pestana === 'documentacion' && <DocumentacionAdmin />}
     </section>
   )
 }

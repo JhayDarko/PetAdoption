@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     ADMIN_API_KEY: str = ""
     SERVICE_KEY: str = ""
     CORS_ORIGINS: str = "*"
+    JWT_SECRET: str = ""
+    ADMIN_USERNAME: str = "admin"
 
     model_config = SettingsConfigDict(
         env_file=".env",
