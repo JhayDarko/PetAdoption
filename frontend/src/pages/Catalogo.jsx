@@ -18,8 +18,8 @@ export default function Catalogo() {
         <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 680 }}>
           <Chip label="ADOPTA CON AMOR" size="small" sx={{ bgcolor: 'rgba(255,255,255,.14)', color: 'white', fontWeight: 800, letterSpacing: 1 }} />
           <Typography variant="h1" sx={{ mt: 2, maxWidth: 620, fontSize: { xs: '2.5rem', md: '4.35rem' }, lineHeight: 1.02 }}>Un hogar cambia dos vidas.</Typography>
-          <Typography sx={{ mt: 2, color: 'rgba(255,255,255,.82)', fontSize: { md: '1.1rem' }, maxWidth: 560 }}>Conoce a los animales que esperan una familia responsable, paciente y llena de cariño.</Typography>
-          <Stack direction="row" spacing={1} sx={{ mt: 3, flexWrap: 'wrap', gap: 1 }}><Chip label="Adopción responsable" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,.12)' }} /><Chip label="Compañía para siempre" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,.12)' }} /></Stack>
+          <Typography sx={{ mt: 2.5, color: 'rgba(255,255,255,.82)', fontSize: { md: '1.1rem' }, maxWidth: 560, lineHeight: 1.7 }}>Conoce a los animales que esperan una familia responsable, paciente y llena de cariño.</Typography>
+          <Stack direction="row" spacing={1} sx={{ mt: 3.5, flexWrap: 'wrap', gap: 1 }}><Chip label="Adopción responsable" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,.12)' }} /><Chip label="Compañía para siempre" sx={{ color: 'white', bgcolor: 'rgba(255,255,255,.12)' }} /></Stack>
         </Box>
       </Box>
       <Paper sx={{ mb: 4, p: { xs: 2, md: 2.5 }, border: '1px solid', borderColor: 'divider', boxShadow: '0 8px 24px rgba(23,58,45,.04)' }}>
@@ -32,7 +32,7 @@ export default function Catalogo() {
       {cargando && <Cargando texto="Buscando mascotas disponibles..." />}
       {!cargando && error && <ErrorPeticion error={error} reintentar={cargar} />}
       {!cargando && !error && datos?.length === 0 && <Paper sx={{ p: 6, textAlign: 'center' }}><Typography color="text.secondary">No encontramos mascotas con esos filtros.</Typography></Paper>}
-      {!cargando && !error && datos?.length > 0 && <><Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 2 }}><Typography variant="h6" color="primary.dark" fontWeight={800}>Mascotas que esperan una familia</Typography><Typography variant="body2" color="text.secondary">{datos.length} resultados</Typography></Stack><Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 2, md: 2.5 } }}>{datos.map((mascota) => <TarjetaMascota key={mascota.id} mascota={mascota} />)}</Box></>}
+      {!cargando && !error && datos?.length > 0 && <><Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'baseline' }} spacing={.5} sx={{ mb: 2.5 }}><Typography variant="h6" color="primary.dark" fontWeight={800}>Mascotas que esperan una familia</Typography><Typography variant="body2" color="text.secondary">{datos.length} resultados</Typography></Stack><Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', md: 'repeat(3, minmax(0, 1fr))', lg: 'repeat(4, minmax(0, 1fr))' }, gap: { xs: 2, md: 2.5 } }}>{datos.map((mascota) => <TarjetaMascota key={mascota.id} mascota={mascota} />)}</Box></>}
     </section>
   )
 }

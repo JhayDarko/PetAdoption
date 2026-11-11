@@ -35,6 +35,7 @@ export default function Login() {
     try {
       const resultado = await loginAdmin(usuario.trim(), contrasena)
       sessionStorage.setItem(tokenStorage, resultado.access_token)
+      sessionStorage.removeItem(guestStorage)
       window.dispatchEvent(new Event('admin-auth-changed'))
     } catch (fallo) {
       setError(
@@ -55,28 +56,28 @@ export default function Login() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', bgcolor: 'background.default', py: { xs: 3, md: 6 } }}>
-      <Container maxWidth="md">
-        <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 5, overflow: 'hidden' }}>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', bgcolor: 'background.default', px: { xs: 1.5, sm: 2 }, py: { xs: 1.5, sm: 3 }, overflowY: 'auto' }}>
+      <Container maxWidth="md" disableGutters>
+        <Card elevation={0} sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: { xs: 3, sm: 5 }, overflow: 'hidden' }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
-            <Box sx={{ p: { xs: 4, sm: 6 }, color: 'white', background: 'linear-gradient(145deg, #173a2d 0%, #21513f 65%, #4d806a 100%)' }}>
-              <Box sx={{ width: 56, height: 56, display: 'grid', placeItems: 'center', borderRadius: 3, bgcolor: 'rgba(255,255,255,.16)', mb: 5 }}>
+            <Box sx={{ p: { xs: 3, sm: 6 }, color: 'white', background: 'linear-gradient(145deg, #173a2d 0%, #21513f 65%, #4d806a 100%)' }}>
+              <Box sx={{ width: 56, height: 56, display: 'grid', placeItems: 'center', borderRadius: 3, bgcolor: 'rgba(255,255,255,.16)', mb: { xs: 3, sm: 5 } }}>
                 <PetsRoundedIcon fontSize="large" />
               </Box>
               <Typography variant="overline" sx={{ color: 'rgba(255,255,255,.72)', letterSpacing: '.16em' }}>Huellas de Esperanza</Typography>
-              <Typography variant="h3" fontWeight={800} sx={{ mt: 1, lineHeight: 1.05 }}>Un hogar puede cambiarlo todo.</Typography>
-              <Typography sx={{ mt: 3, color: 'rgba(255,255,255,.8)', lineHeight: 1.7 }}>
+              <Typography variant="h3" fontWeight={800} sx={{ mt: 1, lineHeight: 1.08, fontSize: { xs: '2rem', sm: '3rem' } }}>Un hogar puede cambiarlo todo.</Typography>
+              <Typography sx={{ mt: 2.5, color: 'rgba(255,255,255,.8)', lineHeight: 1.7 }}>
                 Encuentra un compañero, conoce su historia y da el primer paso hacia una adopción responsable.
               </Typography>
-              <Stack spacing={1.2} sx={{ mt: 5, color: 'rgba(255,255,255,.88)' }}>
+              <Stack spacing={1.2} sx={{ mt: { xs: 3, sm: 5 }, color: 'rgba(255,255,255,.88)' }}>
                 <Typography variant="body2">✓ Explora mascotas que buscan hogar</Typography>
                 <Typography variant="body2">✓ Envía y consulta tus solicitudes</Typography>
                 <Typography variant="body2">✓ Acompaña cada adopción con responsabilidad</Typography>
               </Stack>
             </Box>
-            <CardContent sx={{ p: { xs: 4, sm: 6 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <CardContent sx={{ p: { xs: 3, sm: 6 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <Typography variant="h4" color="primary.dark" fontWeight={800}>Bienvenido</Typography>
-              <Typography color="text.secondary" sx={{ mt: 1, mb: 3 }}>
+              <Typography color="text.secondary" sx={{ mt: 1, mb: 3, lineHeight: 1.65 }}>
                 Ingresa si administras la plataforma o continúa como visitante para conocer nuestro catálogo.
               </Typography>
               {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}

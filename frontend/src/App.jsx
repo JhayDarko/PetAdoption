@@ -4,6 +4,7 @@ import { AppBar, Box, Button, Chip, Container, CssBaseline, Divider, Stack, Tool
 import PetsRoundedIcon from '@mui/icons-material/PetsRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded'
+import SwitchAccountRoundedIcon from '@mui/icons-material/SwitchAccountRounded'
 import { ThemeProvider } from '@mui/material/styles'
 import Catalogo from './pages/Catalogo'
 import DetalleMascota from './pages/DetalleMascota'
@@ -14,7 +15,9 @@ import Login from './pages/Login'
 import { theme } from './theme'
 
 function Layout({ children }) {
-  const [sesionActiva, setSesionActiva] = useState(() => Boolean(sessionStorage.getItem('admin_access_token')))
+  const [sesionActiva, setSesionActiva] = useState(() => Boolean(
+    sessionStorage.getItem('admin_access_token') || sessionStorage.getItem('guest_access'),
+  ))
   useEffect(() => {
     const actualizarSesion = () => setSesionActiva(Boolean(
       sessionStorage.getItem('admin_access_token') || sessionStorage.getItem('guest_access'),
@@ -22,6 +25,11 @@ function Layout({ children }) {
     window.addEventListener('admin-auth-changed', actualizarSesion)
     return () => window.removeEventListener('admin-auth-changed', actualizarSesion)
   }, [])
+  function cambiarAcceso() {
+    sessionStorage.removeItem('admin_access_token')
+    sessionStorage.removeItem('guest_access')
+    window.dispatchEvent(new Event('admin-auth-changed'))
+  }
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
       <AppBar position="sticky" color="inherit" elevation={0} sx={{ borderBottom: '1px solid', borderColor: 'divider', backdropFilter: 'blur(18px)', bgcolor: 'rgba(255,255,255,.88)' }}>
@@ -41,6 +49,7 @@ function Layout({ children }) {
             <Button component={NavLink} to="/" startIcon={<PetsRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'rgba(33,81,63,.08)' } }}>Catálogo</Button>
             <Button component={NavLink} to="/seguimiento" startIcon={<SearchRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'rgba(33,81,63,.08)' } }}>Seguimiento</Button>
             {sesionActiva && <Button component={NavLink} to="/admin" startIcon={<AdminPanelSettingsRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'rgba(33,81,63,.08)' } }}>Admin</Button>}
+            {sesionActiva && <Button onClick={cambiarAcceso} startIcon={<SwitchAccountRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'secondary.dark' }}>Cambiar acceso</Button>}
           </Stack>
         </Toolbar>
       </AppBar>

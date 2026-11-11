@@ -48,6 +48,7 @@ export default function Admin() {
 
   function cerrarSesion() {
     sessionStorage.removeItem(tokenStorage)
+    sessionStorage.removeItem('guest_access')
     setToken('')
     setMensaje({ tipo: 'info', texto: 'Sesión cerrada.' })
     window.dispatchEvent(new Event('admin-auth-changed'))
@@ -55,6 +56,7 @@ export default function Admin() {
 
   function perderSesion() {
     sessionStorage.removeItem(tokenStorage)
+    sessionStorage.removeItem('guest_access')
     setToken('')
     setMensaje({ tipo: 'error', texto: 'La sesión no es válida o expiró. Inicia sesión nuevamente.' })
     window.dispatchEvent(new Event('admin-auth-changed'))
