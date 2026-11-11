@@ -1,5 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS svc_mascotas;
 CREATE SCHEMA IF NOT EXISTS svc_adopciones;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE svc_mascotas.mascotas (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -17,14 +18,27 @@ CREATE TABLE svc_mascotas.mascotas (
     updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE OR REPLACE FUNCTION svc_mascotas.actualizar_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER mascotas_updated_at
+BEFORE UPDATE ON svc_mascotas.mascotas
+FOR EACH ROW
+EXECUTE FUNCTION svc_mascotas.actualizar_updated_at();
+
 CREATE INDEX ix_mascotas_estado_especie
     ON svc_mascotas.mascotas (estado, especie);
 
 CREATE TABLE svc_adopciones.solicitudes (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    mascota_id uuid NOT NULL
-        REFERENCES svc_mascotas.mascotas (id)
-        ON DELETE RESTRICT,
+    mascota_id uuid NOT NULL,
     nombre_solicitante text NOT NULL,
     documento text NOT NULL,
     email text NOT NULL,
@@ -36,7 +50,12 @@ CREATE TABLE svc_adopciones.solicitudes (
         CHECK (estado IN ('pendiente', 'aprobada', 'rechazada')),
     motivo_decision text,
     created_at timestamptz NOT NULL DEFAULT now(),
-    decided_at timestamptz
+    decided_at timestamptz,
+    CONSTRAINT ck_solicitudes_decision_coherente CHECK (
+        (estado = 'pendiente' AND decided_at IS NULL AND motivo_decision IS NULL)
+        OR (estado = 'aprobada' AND decided_at IS NOT NULL AND motivo_decision IS NULL)
+        OR (estado = 'rechazada' AND decided_at IS NOT NULL AND motivo_decision IS NOT NULL)
+    )
 );
 
 CREATE UNIQUE INDEX uq_una_aprobada_por_mascota

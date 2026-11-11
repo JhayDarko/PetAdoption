@@ -18,7 +18,7 @@ async def obtener_disponibilidad(mascota_id: uuid.UUID) -> dict:
             detail="URL de la API de Mascotas no configurada.",
         )
 
-    url = f"{settings.MASCOTAS_API_URL}/mascotas/{mascota_id}/disponibilidad"
+    url = f"{settings.MASCOTAS_API_URL.rstrip('/')}/mascotas/{mascota_id}/disponibilidad"
     headers = {"X-Service-Key": settings.SERVICE_KEY}
     
     try:
@@ -32,7 +32,21 @@ async def obtener_disponibilidad(mascota_id: uuid.UUID) -> dict:
                 )
             
             response.raise_for_status()
-            return response.json()
+            try:
+                payload = response.json()
+            except ValueError as error:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="La API de Mascotas devolvió una respuesta inválida.",
+                ) from error
+            if not isinstance(payload, dict) or "disponible" not in payload:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="La API de Mascotas devolvió un contrato inválido.",
+                )
+            return payload
+    except HTTPException:
+        raise
     except httpx.HTTPError as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -53,7 +67,7 @@ async def marcar_adoptada(mascota_id: uuid.UUID) -> dict:
             detail="URL de la API de Mascotas no configurada.",
         )
 
-    url = f"{settings.MASCOTAS_API_URL}/mascotas/{mascota_id}/estado"
+    url = f"{settings.MASCOTAS_API_URL.rstrip('/')}/mascotas/{mascota_id}/estado"
     headers = {"X-Service-Key": settings.SERVICE_KEY}
     body = {"estado": "adoptada"}
     
@@ -82,7 +96,19 @@ async def marcar_adoptada(mascota_id: uuid.UUID) -> dict:
                     detail=detalle,
                 )
             response.raise_for_status()
-            return response.json()
+            try:
+                payload = response.json()
+            except ValueError as error:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="La API de Mascotas devolvió una respuesta inválida.",
+                ) from error
+            if not isinstance(payload, dict):
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="La API de Mascotas devolvió un contrato inválido.",
+                )
+            return payload
     except HTTPException:
         raise
     except httpx.HTTPError as e:

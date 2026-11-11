@@ -10,6 +10,7 @@ Plataforma web para la adopción responsable de mascotas, organizada como un mon
 ├── README.md
 ├── db/
 │   ├── schema.sql
+│   ├── migrate_hardening.sql
 │   └── seed.sql
 ├── frontend/
 │   ├── src/
@@ -71,10 +72,11 @@ API Adopciones --HTTP/REST + JSON--> API Mascotas
 Cada API es autónoma y escribe únicamente en su propio esquema. Adopciones no
 consulta directamente la base de datos de Mascotas para ejecutar operaciones:
 verifica disponibilidad y actualiza estados mediante HTTP. La base de datos
-mantiene además una referencia de integridad entre `solicitudes.mascota_id` y
-`mascotas.id`, evitando solicitudes huérfanas cuando ambos esquemas viven en la
-misma instancia Supabase. También impide dos adopciones aprobadas para la misma
-mascota mediante un índice único parcial.
+mantiene `solicitudes.mascota_id` como referencia lógica, validada siempre por
+la API de Mascotas. No existe una FK entre esquemas: así cada servicio puede
+desplegarse y migrarse de forma independiente. Adopciones impide dos
+aprobaciones para la misma mascota mediante un índice único parcial y aplica
+invariantes de estado para que las decisiones sean coherentes.
 
 ## Flujo principal demostrado
 
@@ -246,21 +248,16 @@ datos de prueba o información del entorno.
 
 ### Reiniciar y cargar datos de demostración
 
-El archivo [db/seed.sql](db/seed.sql) reconstruye los esquemas, tablas e índices
-y carga 50 mascotas con escenarios
-realistas:
+El archivo [db/seed.sql](db/seed.sql) crea la estructura mínima de Mascotas y
+carga únicamente animales de demostración. Es repetible: no elimina datos
+existentes ni crea solicitudes. Las solicitudes deben generarse exclusivamente
+desde `POST /solicitudes`, para que Adopciones valide disponibilidad y aplique
+sus reglas de negocio.
 
-- 30 mascotas disponibles.
-- 15 mascotas adoptadas con una solicitud aprobada cada una.
-- 5 mascotas disponibles con solicitudes rechazadas.
-- 10 solicitudes pendientes.
-- Mascotas disponibles sin solicitudes para probar el catálogo.
-
-Ejecuta `db/seed.sql` en Supabase solo cuando quieras reemplazar los datos
-actuales: es un script destructivo que elimina y recrea `svc_mascotas` y
-`svc_adopciones`. El script usa una transacción y debe ejecutarse completo.
-También puedes ejecutar primero [db/schema.sql](db/schema.sql) si solo quieres
-crear la estructura sin cargar datos.
+Para instalaciones existentes ejecuta una sola vez
+[db/migrate_hardening.sql](db/migrate_hardening.sql). Esta migración elimina la
+FK entre servicios, normaliza decisiones antiguas y agrega las restricciones e
+índices necesarios sin borrar mascotas ni solicitudes.
 
 El seed asigna imágenes remotas de perros o gatos según la especie mediante
 URLs directas del CDN de Unsplash. No se almacenan imágenes ni archivos
@@ -276,7 +273,6 @@ WHERE table_schema IN ('svc_mascotas', 'svc_adopciones')
 ORDER BY table_schema, table_name;
 
 SELECT * FROM svc_mascotas.mascotas ORDER BY nombre;
-SELECT * FROM svc_adopciones.solicitudes ORDER BY created_at;
 ```
 
 En el Table Editor selecciona el esquema correspondiente en el selector de
@@ -292,11 +288,11 @@ Con ambas APIs desplegadas:
 3. Copiar el `id` devuelto.
 4. En Adopciones, ejecutar `POST /solicitudes` con ese `mascota_id`.
 5. En `GET /solicitudes`, usar el mismo JWT como Bearer y localizar la solicitud.
-5. Ejecutar `PATCH /solicitudes/{id}/aprobar`.
-6. Consultar la mascota en Mascotas y verificar `estado: adoptada`.
-7. Crear dos solicitudes para otra mascota y aprobar una; verificar que la otra
+6. Ejecutar `PATCH /solicitudes/{id}/aprobar`.
+7. Consultar la mascota en Mascotas y verificar `estado: adoptada`.
+8. Crear dos solicitudes para otra mascota y aprobar una; verificar que la otra
    quede `rechazada`.
-8. Intentar aprobar nuevamente y verificar `409`.
+9. Intentar aprobar nuevamente y verificar `409`.
 
 ## Entrega del examen
 

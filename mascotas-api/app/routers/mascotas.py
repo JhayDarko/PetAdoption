@@ -4,6 +4,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import or_, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -110,7 +111,11 @@ def crear_mascota(
 ) -> Mascota:
     mascota = Mascota(**datos.model_dump(), estado="disponible")
     db.add(mascota)
-    db.commit()
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     db.refresh(mascota)
     return mascota
 
@@ -135,7 +140,11 @@ def actualizar_mascota(
     for campo, valor in datos.model_dump().items():
         setattr(mascota, campo, valor)
     mascota.updated_at = datetime.now(UTC)
-    db.commit()
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     db.refresh(mascota)
     return mascota
 
@@ -162,7 +171,11 @@ def eliminar_mascota(
             detail="No se puede eliminar una mascota adoptada.",
         )
     db.delete(mascota)
-    db.commit()
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -186,6 +199,10 @@ def actualizar_estado_mascota(
     if mascota.estado != datos.estado:
         mascota.estado = datos.estado
         mascota.updated_at = datetime.now(UTC)
-    db.commit()
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     db.refresh(mascota)
     return mascota

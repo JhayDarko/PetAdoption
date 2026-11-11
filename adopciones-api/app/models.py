@@ -21,6 +21,12 @@ class Solicitud(Base):
             "estado IN ('pendiente', 'aprobada', 'rechazada')",
             name="ck_solicitudes_estado",
         ),
+        CheckConstraint(
+            "(estado = 'pendiente' AND decided_at IS NULL AND motivo_decision IS NULL) "
+            "OR (estado = 'aprobada' AND decided_at IS NOT NULL AND motivo_decision IS NULL) "
+            "OR (estado = 'rechazada' AND decided_at IS NOT NULL AND motivo_decision IS NOT NULL)",
+            name="ck_solicitudes_decision_coherente",
+        ),
         Index("ix_solicitudes_estado", "estado"),
         Index(
             "uq_una_aprobada_por_mascota",

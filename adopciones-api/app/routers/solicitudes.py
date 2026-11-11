@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.clients.mascotas_client import marcar_adoptada, obtener_disponibilidad
@@ -62,6 +62,9 @@ async def crear_solicitud(
             status_code=status.HTTP_409_CONFLICT,
             detail="Ya existe una solicitud pendiente para esta mascota y persona.",
         )
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     
     db.refresh(solicitud)
     return SolicitudOut.model_validate(solicitud)
@@ -104,7 +107,7 @@ def listar_solicitudes(
     if mascota_id:
         query = query.filter(Solicitud.mascota_id == mascota_id)
     
-    query = query.offset(offset).limit(limit)
+    query = query.order_by(Solicitud.created_at.desc()).offset(offset).limit(limit)
     solicitudes = query.all()
     
     return [SolicitudOut.model_validate(s) for s in solicitudes]
@@ -226,6 +229,9 @@ async def aprobar_solicitud(
             status_code=status.HTTP_409_CONFLICT,
             detail="No fue posible aprobar la solicitud porque la mascota ya tiene una adopción aprobada.",
         )
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     
     return SolicitudOut.model_validate(solicitud)
 
@@ -270,7 +276,11 @@ def rechazar_solicitud(
     solicitud.motivo_decision = rechazo.motivo_decision
     solicitud.decided_at = datetime.now(timezone.utc)
     
-    db.commit()
-    db.refresh(solicitud)
+    try:
+        db.commit()
+        db.refresh(solicitud)
+    except SQLAlchemyError:
+        db.rollback()
+        raise
     
     return SolicitudOut.model_validate(solicitud)
