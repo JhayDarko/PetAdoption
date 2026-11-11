@@ -15,13 +15,9 @@ import Login from './pages/Login'
 import { theme } from './theme'
 
 function Layout({ children }) {
-  const [sesionActiva, setSesionActiva] = useState(() => Boolean(
-    sessionStorage.getItem('admin_access_token') || sessionStorage.getItem('guest_access'),
-  ))
+  const [esAdministrador, setEsAdministrador] = useState(() => Boolean(sessionStorage.getItem('admin_access_token')))
   useEffect(() => {
-    const actualizarSesion = () => setSesionActiva(Boolean(
-      sessionStorage.getItem('admin_access_token') || sessionStorage.getItem('guest_access'),
-    ))
+    const actualizarSesion = () => setEsAdministrador(Boolean(sessionStorage.getItem('admin_access_token')))
     window.addEventListener('admin-auth-changed', actualizarSesion)
     return () => window.removeEventListener('admin-auth-changed', actualizarSesion)
   }, [])
@@ -48,8 +44,8 @@ function Layout({ children }) {
           <Stack direction="row" spacing={{ xs: 0, sm: 1 }} component="nav" aria-label="Navegación principal">
             <Button component={NavLink} to="/" startIcon={<PetsRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'rgba(33,81,63,.08)' } }}>Catálogo</Button>
             <Button component={NavLink} to="/seguimiento" startIcon={<SearchRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'rgba(33,81,63,.08)' } }}>Seguimiento</Button>
-            {sesionActiva && <Button component={NavLink} to="/admin" startIcon={<AdminPanelSettingsRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'rgba(33,81,63,.08)' } }}>Admin</Button>}
-            {sesionActiva && <Button onClick={cambiarAcceso} startIcon={<SwitchAccountRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'secondary.dark' }}>Cambiar acceso</Button>}
+            {esAdministrador && <Button component={NavLink} to="/admin" startIcon={<AdminPanelSettingsRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'text.secondary', '&.active': { color: 'primary.main', bgcolor: 'rgba(33,81,63,.08)' } }}>Admin</Button>}
+            <Button onClick={cambiarAcceso} startIcon={<SwitchAccountRoundedIcon />} sx={{ minWidth: 0, px: { xs: 1, sm: 1.5 }, color: 'secondary.dark' }}>Cambiar acceso</Button>
           </Stack>
         </Toolbar>
       </AppBar>
