@@ -11,7 +11,9 @@ export default function TarjetaMascota({ mascota }) {
       <CardActionArea component={Link} to={`/mascotas/${mascota.id}`} sx={{ height: '100%' }}>
         <Box sx={{ position: 'relative' }}>
           <CardMedia component="img" height="175" image={mascota.foto_url || imagenReemplazo} alt={`Foto de ${mascota.nombre}`} sx={{ objectFit: 'cover' }} />
-          <Typography variant="caption" sx={{ position: 'absolute', left: 12, bottom: 10, px: 1.2, py: .45, borderRadius: 10, color: 'white', bgcolor: 'rgba(23,58,45,.78)', backdropFilter: 'blur(6px)', fontWeight: 700 }}>Disponible</Typography>
+          {mascota.resumenSolicitudes && <Typography variant="caption" sx={{ position: 'absolute', left: 12, bottom: 10, px: 1.2, py: .45, borderRadius: 10, color: 'white', bgcolor: 'rgba(23,58,45,.78)', backdropFilter: 'blur(6px)', fontWeight: 700 }}>
+            {mascota.resumenSolicitudes.tiene_solicitudes ? 'Con solicitudes' : 'Sin solicitudes'}
+          </Typography>}
         </Box>
         <CardContent sx={{ p: 2 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>

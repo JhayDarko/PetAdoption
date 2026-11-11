@@ -42,6 +42,12 @@ class SeguimientoOut(BaseModel):
     motivo_decision: str | None
 
 
+class SolicitudResumenOut(BaseModel):
+    mascota_id: uuid.UUID
+    total: int
+    tiene_solicitudes: bool
+
+
 class RechazoIn(BaseModel):
     motivo_decision: str = Field(
         min_length=1,

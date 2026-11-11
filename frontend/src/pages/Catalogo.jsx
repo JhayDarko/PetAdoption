@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Box, Chip, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, Stack, TextField, Typography } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import { listarMascotas } from '../api'
+import { listarMascotas, resumenSolicitudesMascota } from '../api'
 import { AvisoServidor, Cargando, ErrorPeticion } from '../components/EstadoPeticion'
 import { usePeticion } from '../components/usePeticion'
 import TarjetaMascota from '../components/TarjetaMascota'
@@ -9,7 +9,16 @@ import TarjetaMascota from '../components/TarjetaMascota'
 export default function Catalogo() {
   const [especie, setEspecie] = useState('')
   const [busqueda, setBusqueda] = useState('')
-  const cargar = useCallback(() => listarMascotas({ especie, q: busqueda }), [especie, busqueda])
+  const cargar = useCallback(async () => {
+    const mascotas = await listarMascotas({ especie, q: busqueda })
+    return Promise.all(mascotas.map(async (mascota) => {
+      try {
+        return { ...mascota, resumenSolicitudes: await resumenSolicitudesMascota(mascota.id) }
+      } catch {
+        return { ...mascota, resumenSolicitudes: null }
+      }
+    }))
+  }, [especie, busqueda])
   const { cargando, datos, error, lenta } = usePeticion(cargar, [cargar])
 
   return (

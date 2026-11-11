@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { AppBar, Box, Button, Chip, Container, CssBaseline, Divider, Stack, Toolbar, Typography } from '@mui/material'
 import PetsRoundedIcon from '@mui/icons-material/PetsRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
@@ -91,7 +91,7 @@ export default function App() {
             <Route path="/mascotas/:id" element={<DetalleMascota />} />
             <Route path="/solicitar/:id" element={<FormularioSolicitud />} />
             <Route path="/seguimiento" element={<Seguimiento />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={sessionStorage.getItem('admin_access_token') ? <Admin /> : <Navigate to="/" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>

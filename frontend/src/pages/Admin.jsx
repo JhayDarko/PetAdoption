@@ -7,7 +7,6 @@ import {
   listarMascotasAdmin,
   listarSolicitudes,
   rechazarSolicitud,
-  loginAdmin,
 } from '../api'
 import { AvisoServidor, Cargando, ErrorPeticion, mensajeError } from '../components/EstadoPeticion'
 import { EtiquetaEstado } from '../components/EtiquetaEstado'
@@ -19,37 +18,12 @@ const mascotaInicial = {
 }
 
 export default function Admin() {
-  const [token, setToken] = useState(() => sessionStorage.getItem(tokenStorage) || '')
-  const [usuario, setUsuario] = useState('')
-  const [contrasena, setContrasena] = useState('')
-  const [iniciandoSesion, setIniciandoSesion] = useState(false)
   const [mensaje, setMensaje] = useState(null)
   const [pestana, setPestana] = useState('mascotas')
-  async function iniciarSesion(evento) {
-    evento.preventDefault()
-    if (!usuario.trim() || !contrasena) {
-      setMensaje({ tipo: 'error', texto: 'Ingresa usuario y contraseña.' })
-      return
-    }
-    setIniciandoSesion(true)
-    try {
-      const resultado = await loginAdmin(usuario.trim(), contrasena)
-      sessionStorage.setItem(tokenStorage, resultado.access_token)
-      setToken(resultado.access_token)
-      setContrasena('')
-      setMensaje(null)
-      window.dispatchEvent(new Event('admin-auth-changed'))
-    } catch (fallo) {
-      setMensaje({ tipo: 'error', texto: fallo.status === 401 ? 'Usuario o contraseña inválidos.' : (fallo.detail || 'No fue posible iniciar sesión.') })
-    } finally {
-      setIniciandoSesion(false)
-    }
-  }
 
   function cerrarSesion() {
     sessionStorage.removeItem(tokenStorage)
     sessionStorage.removeItem('guest_access')
-    setToken('')
     setMensaje({ tipo: 'info', texto: 'Sesión cerrada.' })
     window.dispatchEvent(new Event('admin-auth-changed'))
   }
@@ -57,46 +31,8 @@ export default function Admin() {
   function perderSesion() {
     sessionStorage.removeItem(tokenStorage)
     sessionStorage.removeItem('guest_access')
-    setToken('')
     setMensaje({ tipo: 'error', texto: 'La sesión no es válida o expiró. Inicia sesión nuevamente.' })
     window.dispatchEvent(new Event('admin-auth-changed'))
-  }
-
-  if (!token) {
-    return (
-      <section className="admin-login mx-auto max-w-md rounded-[2rem] bg-white p-8 shadow-xl shadow-emerald-950/5 sm:p-10">
-        <div className="mb-8 grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-2xl">🔐</div>
-        <p className="eyebrow">Área privada</p>
-        <h1 className="mt-2 text-3xl font-bold text-bosque">Panel administrativo</h1>
-        <p className="mt-3 text-slate-600">Gestiona mascotas y solicitudes desde un solo lugar.</p>
-        {mensaje && <Aviso tipo={mensaje.tipo}>{mensaje.texto}</Aviso>}
-        <form onSubmit={iniciarSesion} className="mt-6">
-          <label className="text-sm font-semibold text-slate-700">
-            Usuario
-            <input
-              type="text"
-              value={usuario}
-              onChange={(evento) => setUsuario(evento.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-hoja"
-              autoComplete="username"
-            />
-          </label>
-          <label className="mt-4 block text-sm font-semibold text-slate-700">
-            Contraseña
-            <input
-              type="password"
-              value={contrasena}
-              onChange={(evento) => setContrasena(evento.target.value)}
-              className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-3 outline-none focus:border-hoja"
-              autoComplete="current-password"
-            />
-          </label>
-          <button disabled={iniciandoSesion} className="primary-button mt-5 w-full disabled:opacity-60">
-            {iniciandoSesion ? 'Iniciando sesión...' : 'Iniciar sesión'}
-          </button>
-        </form>
-      </section>
-    )
   }
 
   return (

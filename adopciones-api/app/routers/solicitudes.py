@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.clients.mascotas_client import marcar_adoptada, obtener_disponibilidad
 from app.database import get_db
 from app.models import Solicitud
-from app.schemas import RechazoIn, SeguimientoOut, SolicitudIn, SolicitudOut
+from app.schemas import RechazoIn, SeguimientoOut, SolicitudIn, SolicitudOut, SolicitudResumenOut
 from app.security import require_admin
 
 router = APIRouter(
@@ -111,6 +111,23 @@ def listar_solicitudes(
     solicitudes = query.all()
     
     return [SolicitudOut.model_validate(s) for s in solicitudes]
+
+
+@router.get(
+    "/mascota/{mascota_id}/resumen",
+    response_model=SolicitudResumenOut,
+    summary="Consultar si una mascota tiene solicitudes",
+)
+def resumen_solicitudes_mascota(
+    mascota_id: uuid.UUID,
+    db: Session = Depends(get_db),
+) -> SolicitudResumenOut:
+    total = db.query(func.count(Solicitud.id)).filter(Solicitud.mascota_id == mascota_id).scalar() or 0
+    return SolicitudResumenOut(
+        mascota_id=mascota_id,
+        total=total,
+        tiene_solicitudes=total > 0,
+    )
 
 
 @router.get(

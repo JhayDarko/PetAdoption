@@ -50,6 +50,10 @@ export function seguimiento(documento) {
   return solicitar(`${adopcionesUrl}/solicitudes/seguimiento?${parametros}`)
 }
 
+export function resumenSolicitudesMascota(id) {
+  return solicitar(`${adopcionesUrl}/solicitudes/mascota/${id}/resumen`)
+}
+
 export function loginAdmin(username, password) {
   return solicitar(`${adopcionesUrl}/auth/login`, {
     method: 'POST',
