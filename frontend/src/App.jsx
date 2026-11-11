@@ -16,7 +16,9 @@ import { theme } from './theme'
 function Layout({ children }) {
   const [sesionActiva, setSesionActiva] = useState(() => Boolean(sessionStorage.getItem('admin_access_token')))
   useEffect(() => {
-    const actualizarSesion = () => setSesionActiva(Boolean(sessionStorage.getItem('admin_access_token')))
+    const actualizarSesion = () => setSesionActiva(Boolean(
+      sessionStorage.getItem('admin_access_token') || sessionStorage.getItem('guest_access'),
+    ))
     window.addEventListener('admin-auth-changed', actualizarSesion)
     return () => window.removeEventListener('admin-auth-changed', actualizarSesion)
   }, [])
@@ -51,7 +53,9 @@ function Layout({ children }) {
 }
 
 export default function App() {
-  const [sesionActiva, setSesionActiva] = useState(() => Boolean(sessionStorage.getItem('admin_access_token')))
+  const [sesionActiva, setSesionActiva] = useState(() => Boolean(
+    sessionStorage.getItem('admin_access_token') || sessionStorage.getItem('guest_access'),
+  ))
 
   useEffect(() => {
     const actualizarSesion = () => setSesionActiva(Boolean(sessionStorage.getItem('admin_access_token')))
