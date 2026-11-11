@@ -10,6 +10,7 @@ import DetalleMascota from './pages/DetalleMascota'
 import FormularioSolicitud from './pages/FormularioSolicitud'
 import Seguimiento from './pages/Seguimiento'
 import Admin from './pages/Admin'
+import Login from './pages/Login'
 import { theme } from './theme'
 
 function Layout({ children }) {
@@ -50,19 +51,29 @@ function Layout({ children }) {
 }
 
 export default function App() {
+  const [sesionActiva, setSesionActiva] = useState(() => Boolean(sessionStorage.getItem('admin_access_token')))
+
+  useEffect(() => {
+    const actualizarSesion = () => setSesionActiva(Boolean(sessionStorage.getItem('admin_access_token')))
+    window.addEventListener('admin-auth-changed', actualizarSesion)
+    return () => window.removeEventListener('admin-auth-changed', actualizarSesion)
+  }, [])
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Catalogo />} />
-          <Route path="/mascotas/:id" element={<DetalleMascota />} />
-          <Route path="/solicitar/:id" element={<FormularioSolicitud />} />
-          <Route path="/seguimiento" element={<Seguimiento />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Layout>
+      {sesionActiva ? (
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Catalogo />} />
+            <Route path="/mascotas/:id" element={<DetalleMascota />} />
+            <Route path="/solicitar/:id" element={<FormularioSolicitud />} />
+            <Route path="/seguimiento" element={<Seguimiento />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
+      ) : <Login />}
     </ThemeProvider>
   )
 }
