@@ -17,7 +17,28 @@ export const theme = createTheme({
   shape: { borderRadius: 16 },
   components: {
     MuiButton: { defaultProps: { disableElevation: true } },
-    MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
+    MuiPaper: {
+      styleOverrides: {
+        root: { backgroundImage: 'none', borderRadius: 20 },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          border: '1px solid rgba(33, 81, 63, .08)',
+          boxShadow: '0 10px 30px rgba(23, 58, 45, .06)',
+        },
+      },
+    },
+    MuiAppBar: { styleOverrides: { root: { backgroundImage: 'none' } } },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: 2 },
+        },
+      },
+    },
     MuiTextField: { defaultProps: { size: 'small' } },
   },
 })
