@@ -58,7 +58,9 @@ export default function App() {
   ))
 
   useEffect(() => {
-    const actualizarSesion = () => setSesionActiva(Boolean(sessionStorage.getItem('admin_access_token')))
+    const actualizarSesion = () => setSesionActiva(Boolean(
+      sessionStorage.getItem('admin_access_token') || sessionStorage.getItem('guest_access'),
+    ))
     window.addEventListener('admin-auth-changed', actualizarSesion)
     return () => window.removeEventListener('admin-auth-changed', actualizarSesion)
   }, [])
